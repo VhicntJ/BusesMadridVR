@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f6f8fb;
+  --foreground: #0d1b2d;
+  --card: #ffffff;
+  --muted: #4d6077;
+  --primary: #fad224;
+  --primary-2: #e5a90a;
+  --ring: #f3bf1b;
+  --brand-surface: #0d1b2d;
+  --brand-surface-2: #14243a;
+  --brand-surface-border: #2a3d59;
+  --brand-on-surface: #f4f7fb;
+  --brand-on-surface-muted: #c8d3e4;
+}
+
+:root[data-theme="minero"] {
+  --background: #f6f8fb;
+  --foreground: #0d1b2d;
+  --muted: #4d6077;
+  --primary: #fad224;
+  --primary-2: #e5a90a;
+  --ring: #f3bf1b;
+  --brand-surface: #0d1b2d;
+  --brand-surface-2: #14243a;
+  --brand-surface-border: #2a3d59;
+  --brand-on-surface: #f4f7fb;
+  --brand-on-surface-muted: #c8d3e4;
+}
+
+:root[data-theme="premium"] {
+  --background: #f8f8f7;
+  --foreground: #161616;
+  --muted: #525252;
+  --primary: #fad224;
+  --primary-2: #f0b90b;
+  --ring: #f6ca33;
+  --brand-surface: #1f1f1f;
+  --brand-surface-2: #2a2a2a;
+  --brand-surface-border: #3f3f3f;
+  --brand-on-surface: #fbfbfa;
+  --brand-on-surface-muted: #d2d2d0;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-2: var(--primary-2);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-manrope);
+  --font-heading: var(--font-space-grotesk);
+}
+
+* {
+  scroll-margin-top: 96px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-manrope), sans-serif;
+  text-rendering: optimizeLegibility;
+  background-image:
+    radial-gradient(circle at 88% 0%, rgba(250, 210, 36, 0.2), transparent 30%),
+    radial-gradient(circle at 0% 22%, rgba(13, 27, 45, 0.08), transparent 36%);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-space-grotesk), sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.container-pro {
+  width: min(1200px, 92%);
+  margin-inline: auto;
+}
+
+.gradient-btn {
+  background-image: linear-gradient(120deg, var(--primary), var(--primary-2));
+}
+
+.brand-surface {
+  background-color: var(--brand-surface);
+}
+
+.brand-surface-2 {
+  background-color: var(--brand-surface-2);
+}
+
+.brand-surface-border {
+  border-color: var(--brand-surface-border);
+}
+
+.brand-on-surface {
+  color: var(--brand-on-surface);
+}
+
+.brand-on-surface-muted {
+  color: var(--brand-on-surface-muted);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+}
