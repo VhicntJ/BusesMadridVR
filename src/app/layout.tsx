@@ -11,6 +11,7 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
 });
+import { WebVitalsProvider } from "@/components/providers/web-vitals-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://busesmadrid.cl"),
@@ -88,7 +89,10 @@ export default function RootLayout({
       lang="es-CL"
       className={`${manrope.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <WebVitalsProvider />
+        {children}
+      </body>
     </html>
   );
 }

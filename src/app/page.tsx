@@ -17,6 +17,7 @@ import { ServicesGrid } from "@/components/sections/services-grid";
 import { StatsSection } from "@/components/sections/stats-section";
 import { Navbar } from "@/components/ui/navbar";
 import { ThemeVariantSwitcher } from "@/components/ui/theme-variant-switcher";
+import { VideoOperationsSection } from "@/components/sections/video-operations-section";
 import {
   clientLogos,
   features,
@@ -123,7 +124,7 @@ export default function Home() {
         ]}
       />
 
-      <section className="w-full bg-white py-20">
+      <section id="servicios-intro" className="w-full bg-white py-20">
         <div className="container-pro">
           <div className="grid gap-12 md:grid-cols-2">
             <Reveal>
@@ -169,6 +170,7 @@ export default function Home() {
       </section>
 
       <StatsSection
+        id="somos-buses-madrid"
         title="SOMOS BUSES MADRID"
         stats={[
           { value: "35+", label: "años de experiencia" },
@@ -179,6 +181,8 @@ export default function Home() {
           { value: "10.000+", label: "pasajeros diarios" },
         ]}
       />
+
+      <VideoOperationsSection id="operaciones-modernas" />
 
       <section id="flota" className="w-full bg-slate-50 py-20">
         <div className="container-pro">
@@ -192,8 +196,8 @@ export default function Home() {
 
       <section id="calidad" className="container-pro pt-20">
         <SectionHeading
-          title="Nuestros Diferenciales"
-          description="Características que nos distinguen en la industria del transporte."
+          title="Calidad Buses Madrid"
+          description="Priorizamos puntualidad, limpieza y calidad para ofrecer un servicio de transporte excepcional."
         />
 
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">

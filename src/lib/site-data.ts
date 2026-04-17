@@ -13,8 +13,8 @@ import {
 
 export const navItems = [
   { label: "Servicios", href: "#servicios" },
-  { label: "Calidad", href: "#calidad" },
   { label: "Flota", href: "#flota" },
+  { label: "Calidad", href: "#calidad" },
   { label: "Nosotros", href: "#nosotros" },
   { label: "Clientes", href: "#clientes" },
   { label: "Contacto", href: "#contacto" },
@@ -72,10 +72,10 @@ export const services = [
 ] as const;
 
 export const features = [
-  { title: "Conductores certificados", icon: ShieldCheck },
+  { title: "Conductores con experiencia y certificación", icon: ShieldCheck },
   { title: "Control vía satelital GPS", icon: Globe2 },
-  { title: "Más de 35 años experiencia", icon: Medal },
-  { title: "Flota moderna", icon: BadgeCheck },
+  { title: "Más de 35 años de experiencia", icon: Medal },
+  { title: "Moderna flota de vehículos", icon: BadgeCheck },
 ] as const;
 
 export const fleet = [
@@ -130,9 +130,9 @@ export const clientLogos = [
 
 export const stats = [
   { value: "35+", label: "años de experiencia" },
-  { value: "100%", label: "flota moderna" },
-  { value: "24/7", label: "monitoreo GPS" },
-  { value: "99%", label: "puntualidad" },
+  { value: "50+", label: "empresas clientes" },
+  { value: "10.000+", label: "pasajeros diarios" },
+  { value: "30+", label: "años en transporte minero" },
 ] as const;
 
 export const heroServices = services.map((service) => ({

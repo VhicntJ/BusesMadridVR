@@ -9,6 +9,7 @@ type StatItem = {
 };
 
 type StatsProps = {
+  id?: string;
   title: string;
   stats: StatItem[];
 };
@@ -70,9 +71,9 @@ function AnimatedStatValue({ value }: { value: string }) {
   return <>{displayValue}</>;
 }
 
-export function StatsSection({ title, stats }: StatsProps) {
+export function StatsSection({ id, title, stats }: StatsProps) {
   return (
-    <section className="brand-surface w-full py-20">
+    <section id={id} className="brand-surface w-full py-20">
       <div className="container-pro">
         <Reveal>
           <h2 className="brand-on-surface mb-12 text-center text-4xl font-bold sm:text-5xl">
