@@ -6,6 +6,8 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Menu, TriangleAlert, X } from "lucide-react";
 
+import { DenunciaModal } from "@/components/ui/denuncia-modal";
+
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +22,7 @@ type NavbarProps = {
 
 export function Navbar({ items }: NavbarProps) {
   const [open, setOpen] = useState(false);
+  const [isDenunciaOpen, setDenunciaOpen] = useState(false);
 
   return (
     <header className="brand-surface sticky top-0 z-50 w-full shadow-lg">
@@ -68,13 +71,13 @@ export function Navbar({ items }: NavbarProps) {
             >
               Contacto
             </Link>
-            <Link
-              href="#"
+            <button
+              onClick={() => setDenunciaOpen(true)}
               className="inline-flex h-11 items-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-semibold text-white transition-all duration-300 hover:bg-red-700 hover:-translate-y-0.5"
             >
               <TriangleAlert className="h-4 w-4" />
               Canal de denuncias
-            </Link>
+            </button>
           </div>
 
           <button
@@ -113,18 +116,25 @@ export function Navbar({ items }: NavbarProps) {
               >
                 Contacto
               </Link>
-              <Link
-                href="#"
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  setDenunciaOpen(true);
+                }}
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-semibold text-white transition-all duration-300 hover:bg-red-700"
-                onClick={() => setOpen(false)}
               >
                 <TriangleAlert className="h-4 w-4" />
                 Canal de denuncias
-              </Link>
+              </button>
             </div>
           </div>
         </div>
       </nav>
+
+      <DenunciaModal
+        isOpen={isDenunciaOpen}
+        onClose={() => setDenunciaOpen(false)}
+      />
     </header>
   );
 }
