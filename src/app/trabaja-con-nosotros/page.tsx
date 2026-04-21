@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     canonical: "/trabaja-con-nosotros",
   },
   openGraph: {
-    title: "Trabaja con nosotros | Buses Madrid",
+    title: "Trabaja con nosotros | BUSES MADRID",
     description:
       "Una landing dedicada para mostrar cómo es trabajar en Buses Madrid y facilitar tu postulación.",
     url: "https://busesmadrid.cl/trabaja-con-nosotros",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
         url: "/images/fotos/Exterior.webp",
         width: 1200,
         height: 630,
-        alt: "Trabaja con nosotros en Buses Madrid",
+        alt: "Trabaja con nosotros en BUSES MADRID",
       },
     ],
   },

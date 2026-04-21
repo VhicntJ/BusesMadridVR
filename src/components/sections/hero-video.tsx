@@ -86,13 +86,13 @@ export function HeroVideo({
               <div className="max-w-3xl">
                 <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/18 bg-white/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] backdrop-blur-sm sm:px-4 sm:text-xs lg:bg-white/10 lg:text-primary">
                   <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                  Buses Madrid
+                  BUSES MADRID
                 </div>
                 <p className="inline-flex rounded-full border border-primary/35 bg-white/10 px-4 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-primary sm:text-xs">
                   Transporte seguro, confiable y profesional
                 </p>
                 <h1 className="mt-4 max-w-[12ch] text-5xl font-black leading-[0.92] tracking-[-0.04em] text-white drop-shadow-[0_8px_24px_rgba(0,0,0,0.45)] sm:mt-5 sm:max-w-3xl sm:text-6xl lg:text-7xl">
-                  {title}
+                  BUSES MADRID
                 </h1>
                 <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-100/95 drop-shadow-[0_4px_14px_rgba(0,0,0,0.35)] sm:mt-5 sm:text-xl">
                   {subtitle}
