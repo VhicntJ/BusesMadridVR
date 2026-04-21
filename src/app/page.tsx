@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 
 import { SiteFooter } from "@/components/layout/site-footer";
+import { Parallax } from "@/components/motion/parallax";
 import { Reveal } from "@/components/motion/reveal";
 import { BrandsCarousel } from "@/components/sections/brands-carousel";
 import { ContactForm } from "@/components/sections/contact-form";
@@ -128,6 +129,7 @@ export default function Home() {
         <div className="container-pro">
           <div className="grid gap-12 md:grid-cols-2">
             <Reveal>
+              <Parallax offset={28} speed={0.7} direction="up">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-widest text-primary">
                   Nuestro Propósito
@@ -140,9 +142,11 @@ export default function Home() {
                   trabajo y destinos clave. Somos el nexo confiable en cada trayecto.
                 </p>
               </div>
+              </Parallax>
             </Reveal>
 
             <Reveal delay={0.1}>
+              <Parallax offset={28} speed={0.7} direction="down">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-widest text-primary">
                   Nuestra Misión
@@ -156,6 +160,7 @@ export default function Home() {
                   responsabilidad social corporativa.
                 </p>
               </div>
+              </Parallax>
             </Reveal>
           </div>
         </div>
@@ -186,11 +191,15 @@ export default function Home() {
 
       <section id="flota" className="w-full bg-slate-50 py-20">
         <div className="container-pro">
-          <SectionHeading
-            title="Nuestra Flota"
-            description="Vehículos modernos especializados para cada requerimiento: capacidad, confort y seguridad operacional."
-          />
-          <FleetShowcase fleet={fleet} />
+          <Parallax offset={26} speed={0.65} direction="up">
+            <SectionHeading
+              title="Nuestra Flota"
+              description="Vehículos modernos especializados para cada requerimiento: capacidad, confort y seguridad operacional."
+            />
+          </Parallax>
+          <Parallax offset={34} speed={0.75} direction="down">
+            <FleetShowcase fleet={fleet} />
+          </Parallax>
         </div>
       </section>
 
@@ -205,10 +214,16 @@ export default function Home() {
             const Icon = feature.icon;
             return (
               <Reveal key={feature.title} delay={index * 0.06}>
-                <div className="h-full rounded-xl bg-gradient-to-br from-white to-blue-50/50 p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                  <Icon className="h-8 w-8 text-primary" />
-                  <h3 className="mt-4 text-base font-semibold text-slate-900">{feature.title}</h3>
-                </div>
+                <Parallax
+                  offset={22 + index * 2}
+                  speed={0.55}
+                  direction={index % 2 === 0 ? "up" : "down"}
+                >
+                  <div className="h-full rounded-xl bg-gradient-to-br from-white to-blue-50/50 p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                    <Icon className="h-8 w-8 text-primary" />
+                    <h3 className="mt-4 text-base font-semibold text-slate-900">{feature.title}</h3>
+                  </div>
+                </Parallax>
               </Reveal>
             );
           })}
@@ -266,15 +281,19 @@ export default function Home() {
 
       <section id="clientes" className="w-full bg-slate-50 py-20">
         <div className="container-pro">
-          <SectionHeading
-            title="Confían en nosotros"
-            description="Empresas líderes en distintas industrias nos eligen para sus soluciones de transporte corporativo, minero y especial."
-            centered
-          />
+          <Parallax offset={24} speed={0.6} direction="up">
+            <SectionHeading
+              title="Confían en nosotros"
+              description="Empresas líderes en distintas industrias nos eligen para sus soluciones de transporte corporativo, minero y especial."
+              centered
+            />
+          </Parallax>
 
           <div className="mt-12">
             <Reveal>
-              <BrandsCarousel brands={clientLogos} />
+              <Parallax offset={30} speed={0.7} direction="down">
+                <BrandsCarousel brands={clientLogos} />
+              </Parallax>
             </Reveal>
           </div>
         </div>
@@ -283,42 +302,46 @@ export default function Home() {
       <section id="contacto" className="container-pro pt-20 pb-12">
         <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr]">
           <Reveal>
-            <div>
-              <h2 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
-                ¿Necesitas transporte?
-              </h2>
-              <p className="mt-4 text-slate-600">
-                Cuéntanos tu requerimiento y te enviaremos una propuesta personalizada.
-              </p>
+            <Parallax offset={26} speed={0.65} direction="up">
+              <div>
+                <h2 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
+                  ¿Necesitas transporte?
+                </h2>
+                <p className="mt-4 text-slate-600">
+                  Cuéntanos tu requerimiento y te enviaremos una propuesta personalizada.
+                </p>
 
-              <div className="mt-8 space-y-4">
-                <div className="flex items-start gap-3">
-                  <HeartHandshake className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
-                  <div>
-                    <p className="font-semibold text-slate-900">Asesoría personalizada</p>
-                    <p className="text-sm text-slate-600">Analizamos tu caso específico</p>
+                <div className="mt-8 space-y-4">
+                  <div className="flex items-start gap-3">
+                    <HeartHandshake className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
+                    <div>
+                      <p className="font-semibold text-slate-900">Asesoría personalizada</p>
+                      <p className="text-sm text-slate-600">Analizamos tu caso específico</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Globe2 className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
-                  <div>
-                    <p className="font-semibold text-slate-900">Cobertura nacional</p>
-                    <p className="text-sm text-slate-600">Operamos en todo Chile</p>
+                  <div className="flex items-start gap-3">
+                    <Globe2 className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
+                    <div>
+                      <p className="font-semibold text-slate-900">Cobertura nacional</p>
+                      <p className="text-sm text-slate-600">Operamos en todo Chile</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Timer className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
-                  <div>
-                    <p className="font-semibold text-slate-900">Respuesta rápida</p>
-                    <p className="text-sm text-slate-600">Te contactamos al día siguiente</p>
+                  <div className="flex items-start gap-3">
+                    <Timer className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
+                    <div>
+                      <p className="font-semibold text-slate-900">Respuesta rápida</p>
+                      <p className="text-sm text-slate-600">Te contactamos al día siguiente</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </Parallax>
           </Reveal>
 
           <Reveal delay={0.1}>
-            <ContactForm />
+            <Parallax offset={32} speed={0.7} direction="down">
+              <ContactForm />
+            </Parallax>
           </Reveal>
         </div>
       </section>

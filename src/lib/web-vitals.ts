@@ -8,6 +8,25 @@ export interface WebVitals {
   delta?: number;
 }
 
+interface LargestContentfulPaintEntry extends PerformanceEntry {
+  renderTime?: number;
+  loadTime?: number;
+}
+
+interface LayoutShiftEntry extends PerformanceEntry {
+  value: number;
+  hadRecentInput: boolean;
+}
+
+interface FirstInputEntry extends PerformanceEntry {
+  processingStart: number;
+  startTime: number;
+}
+
+interface WindowWithGtag extends Window {
+  gtag?: (...args: unknown[]) => void;
+}
+
 // Thresholds for Core Web Vitals (Google standards)
 const THRESHOLDS = {
   LCP: { good: 2500, poor: 4000 }, // Largest Contentful Paint (ms)
@@ -33,9 +52,10 @@ export function trackLCP(callback: (metric: WebVitals) => void) {
   try {
     const observer = new PerformanceObserver((list) => {
       const entries = list.getEntries();
-      const lastEntry = entries[entries.length - 1] as any;
+      const lastEntry = entries[entries.length - 1] as LargestContentfulPaintEntry | undefined;
+      if (!lastEntry) return;
 
-      const value = lastEntry.renderTime || lastEntry.loadTime;
+      const value = lastEntry.renderTime ?? lastEntry.loadTime ?? 0;
       const metric: WebVitals = {
         name: "LCP",
         value,
@@ -63,9 +83,8 @@ export function trackCLS(callback: (metric: WebVitals) => void) {
 
     const observer = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
-        const typedEntry = entry as any;
+        const typedEntry = entry as LayoutShiftEntry;
         if (!typedEntry.hadRecentInput) {
-          const firstSessionEntry = clsValue;
           clsValue += typedEntry.value;
 
           if (clsValue - previousSessionValue < 1) {
@@ -101,9 +120,10 @@ export function trackFID(callback: (metric: WebVitals) => void) {
   try {
     const observer = new PerformanceObserver((list) => {
       const entries = list.getEntries();
-      const firstEntry = entries[0] as any;
+      const firstEntry = entries[0] as FirstInputEntry | undefined;
+      if (!firstEntry) return;
 
-      const value = firstEntry.processingDuration;
+      const value = firstEntry.processingStart - firstEntry.startTime;
       const metric: WebVitals = {
         name: "FID",
         value,
@@ -146,9 +166,11 @@ export function trackTTFB(callback: (metric: WebVitals) => void) {
 export function sendMetricToAnalytics(metric: WebVitals) {
   if (typeof window === "undefined") return;
 
+  const analyticsWindow = window as WindowWithGtag;
+
   // Send to Google Analytics 4
-  if ((window as any).gtag) {
-    (window as any).gtag("event", metric.name.toLowerCase(), {
+  if (analyticsWindow.gtag) {
+    analyticsWindow.gtag("event", metric.name.toLowerCase(), {
       value: Math.round(metric.value),
       event_category: "web_vitals",
       event_label: metric.rating,

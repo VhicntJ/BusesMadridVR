@@ -92,7 +92,8 @@ export function DenunciaModal({ isOpen, onClose }: DenunciaModalProps) {
 
   const tipoEnvio = watch("tipoEnvio");
 
-  const onSubmit = async (data: FormData) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const onSubmit = async (_data: FormData) => {
     // Simulated API call
     await new Promise((resolve) => setTimeout(resolve, 1500));
     const generatedCode = "BM-" + Math.floor(1000 + Math.random() * 9000);

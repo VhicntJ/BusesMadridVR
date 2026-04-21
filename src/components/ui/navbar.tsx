@@ -4,9 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, TriangleAlert, X } from "lucide-react";
+import { Briefcase, Menu, TriangleAlert, X } from "lucide-react";
 
 import { DenunciaModal } from "@/components/ui/denuncia-modal";
+import { JobApplicationModal } from "@/components/ui/job-application-modal";
 
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -38,6 +39,7 @@ const navCheckpoints: Record<string, string[]> = {
 export function Navbar({ items }: NavbarProps) {
   const [open, setOpen] = useState(false);
   const [isDenunciaOpen, setDenunciaOpen] = useState(false);
+  const [isJobAppOpen, setJobAppOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [splash, setSplash] = useState({ id: 0, x: 0 });
@@ -65,7 +67,12 @@ export function Navbar({ items }: NavbarProps) {
             const element = document.getElementById(id);
             return element ? { id, element, offsetTop: element.offsetTop } : null;
           })
-          .filter(Boolean);
+          .filter(
+            (
+              checkpoint,
+            ): checkpoint is { id: string; element: HTMLElement; offsetTop: number } =>
+              checkpoint !== null,
+          );
 
         return { navIndex: index, label: item.label, checkpoints };
       });
@@ -291,6 +298,13 @@ export function Navbar({ items }: NavbarProps) {
               Contacto
             </Link>
             <button
+              onClick={() => setJobAppOpen(true)}
+              className="inline-flex h-11 items-center gap-2 rounded-xl bg-amber-500 px-4 text-sm font-semibold text-white transition-all duration-300 hover:bg-amber-600 hover:-translate-y-0.5"
+            >
+              <Briefcase className="h-4 w-4" />
+              Trabaja con nosotros
+            </button>
+            <button
               onClick={() => setDenunciaOpen(true)}
               className="inline-flex h-11 items-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-semibold text-white transition-all duration-300 hover:bg-red-700 hover:-translate-y-0.5"
             >
@@ -384,11 +398,21 @@ export function Navbar({ items }: NavbarProps) {
                   <div className="brand-surface-border mt-2 grid gap-2 border-t border-white/10 px-1 pt-3">
                     <Link
                       href="#contacto"
-                      className={buttonVariants({ variant: "secondary", size: "sm" })}
+                      className={buttonVariants({ variant: "secondary", size: "default" })}
                       onClick={() => setOpen(false)}
                     >
                       Contacto
                     </Link>
+                    <button
+                      onClick={() => {
+                        setOpen(false);
+                        setJobAppOpen(true);
+                      }}
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 text-sm font-semibold text-white transition-all duration-300 hover:bg-amber-600 hover:shadow-lg hover:shadow-amber-500/25"
+                    >
+                      <Briefcase className="h-4 w-4" />
+                      Trabaja con nosotros
+                    </button>
                     <button
                       onClick={() => {
                         setOpen(false);
@@ -410,6 +434,11 @@ export function Navbar({ items }: NavbarProps) {
       <DenunciaModal
         isOpen={isDenunciaOpen}
         onClose={() => setDenunciaOpen(false)}
+      />
+
+      <JobApplicationModal
+        isOpen={isJobAppOpen}
+        onClose={() => setJobAppOpen(false)}
       />
     </header>
   );

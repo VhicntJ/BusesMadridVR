@@ -2,9 +2,12 @@
 // Showcases video content with parallax and scroll triggers
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { CheckCircle2, Gauge, Shield, Zap } from "lucide-react";
 import { ScrollTrigger } from "@/components/motion/scroll-trigger";
+import { cn } from "@/lib/utils";
 
 const operationalFeatures = [
   {
@@ -34,6 +37,8 @@ type VideoOperationsSectionProps = {
 };
 
 export function VideoOperationsSection({ id }: VideoOperationsSectionProps) {
+  const [isVideoAvailable, setIsVideoAvailable] = useState(true);
+
   return (
     <section id={id} className="group/ambient relative w-full overflow-hidden bg-slate-50 py-20">
       <div className="container-pro relative z-10">
@@ -59,6 +64,16 @@ export function VideoOperationsSection({ id }: VideoOperationsSectionProps) {
             className="group/band relative mt-12 overflow-hidden rounded-[2rem] border border-slate-200/80 bg-slate-900 shadow-2xl"
           >
             <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+              <Image
+                src="/images/fotos/Exterior-Ruta.webp"
+                alt="Operaciones Buses Madrid"
+                fill
+                sizes="100vw"
+                className={cn(
+                  "object-cover object-center transition-opacity duration-500",
+                  isVideoAvailable ? "opacity-0" : "opacity-55"
+                )}
+              />
               <video
                 src="/images/fotos/63531038-1a8d-35f1-d0eb-eaf0610051d8_custom.mp4"
                 autoPlay
@@ -66,7 +81,12 @@ export function VideoOperationsSection({ id }: VideoOperationsSectionProps) {
                 loop
                 playsInline
                 preload="metadata"
-                className="h-full w-full scale-[1.34] object-cover object-center opacity-30 blur-[2px] transition-all duration-500 group-hover/band:scale-[1.4] group-hover/band:opacity-55 group-hover/band:blur-0"
+                className={cn(
+                  "h-full w-full scale-[1.34] object-cover object-center opacity-30 blur-[2px] transition-all duration-500 group-hover/band:scale-[1.4] group-hover/band:opacity-55 group-hover/band:blur-0",
+                  !isVideoAvailable && "opacity-0"
+                )}
+                onCanPlay={() => setIsVideoAvailable(true)}
+                onError={() => setIsVideoAvailable(false)}
               />
               <div className="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-950/45 to-slate-950/70" />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/65 via-transparent to-slate-950/45" />

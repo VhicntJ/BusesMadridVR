@@ -3,7 +3,6 @@ import {
   CheckCircle2, 
   Clock, 
   FileText, 
-  TrendingUp, 
   Users,
   Search,
   Filter,
