@@ -1,8 +1,9 @@
-import { 
-  AlertTriangle, 
-  CheckCircle2, 
-  Clock, 
-  FileText, 
+import Link from "next/link";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  FileText,
   Users,
   Search,
   Filter,
@@ -163,9 +164,12 @@ export default function AdminDashboardPage() {
             </table>
           </div>
           <div className="p-4 border-t border-slate-100 bg-slate-50/50 text-center">
-            <button className="text-sm font-semibold text-red-600 hover:text-red-700 transition-colors">
+            <Link
+              href="/admin/denuncias"
+              className="text-sm font-semibold text-red-600 hover:text-red-700 transition-colors"
+            >
               Ver todas las denuncias →
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -180,17 +184,23 @@ export default function AdminDashboardPage() {
               <p className="text-slate-400 text-sm mb-6">Revisa las alertas de alta prioridad inmediatamente.</p>
               
               <div className="space-y-3">
-                <button className="w-full bg-red-600 hover:bg-red-500 text-white flex items-center justify-between px-4 py-3 rounded-xl font-semibold transition-colors">
+                <Link
+                  href="/admin/denuncias"
+                  className="w-full bg-red-600 hover:bg-red-500 text-white flex items-center justify-between px-4 py-3 rounded-xl font-semibold transition-colors"
+                >
                   <span className="flex items-center gap-2">
                     <AlertTriangle size={18} /> Iniciar Revisión BM-4912
                   </span>
                   <span>→</span>
-                </button>
-                <button className="w-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-between px-4 py-3 rounded-xl font-semibold transition-colors">
+                </Link>
+                <Link
+                  href="/admin/usuarios"
+                  className="w-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-between px-4 py-3 rounded-xl font-semibold transition-colors"
+                >
                   <span className="flex items-center gap-2">
                     <Users size={18} /> Asignar Analistas
                   </span>
-                </button>
+                </Link>
               </div>
             </div>
           </div>

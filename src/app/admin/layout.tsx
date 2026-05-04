@@ -1,11 +1,36 @@
+"use client";
 import { ReactNode } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { LayoutDashboard, AlertCircle, Settings, LogOut, Users, ShieldCheck } from "lucide-react";
 
+const navItems = [
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  {
+    href: "/admin/denuncias",
+    label: "Buzón Denuncias",
+    icon: AlertCircle,
+    badge: "3",
+    badgeColor: "bg-red-500",
+  },
+  { href: "/admin/usuarios", label: "Usuarios y Roles", icon: Users },
+];
+
+const systemItems = [
+  { href: "/admin/configuracion", label: "Configuración", icon: Settings },
+];
+
 export default function AdminLayout({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+
+  const isActive = (href: string, exact?: boolean) => {
+    if (exact) return pathname === href;
+    return pathname.startsWith(href);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans">
-      {/* Sidebar Vertical */}
+      {/* Sidebar */}
       <aside className="w-64 bg-slate-900 border-r border-slate-800 text-slate-300 flex flex-col fixed h-full z-10 shadow-xl">
         <div className="p-6 border-b border-slate-800/50 flex items-center gap-3">
           <div className="bg-red-600 p-2 rounded-lg">
@@ -16,38 +41,74 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <p className="text-xs text-slate-400 font-medium">Portal Ética</p>
           </div>
         </div>
-        
-        <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto">
+
+        <nav className="flex-1 px-4 py-8 space-y-1 overflow-y-auto">
           <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">
             Gestión
           </p>
-          
-          <Link href="/admin" className="flex items-center gap-3 px-4 py-3 bg-red-600/10 text-red-500 rounded-xl font-semibold transition-colors">
-            <LayoutDashboard size={18} /> 
-            <span>Dashboard</span>
-          </Link>
-          
-          <Link href="/admin/denuncias" className="flex items-center gap-3 px-4 py-3 hover:bg-slate-800/60 hover:text-white rounded-xl font-medium transition-colors group">
-            <AlertCircle size={18} className="text-slate-400 group-hover:text-red-400 transition-colors" /> 
-            <span>Buzón Denuncias</span>
-            <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">3</span>
-          </Link>
 
-          <Link href="/admin/usuarios" className="flex items-center gap-3 px-4 py-3 hover:bg-slate-800/60 hover:text-white rounded-xl font-medium transition-colors group mt-2">
-            <Users size={18} className="text-slate-400 group-hover:text-amber-400 transition-colors" /> 
-            <span>Usuarios y Roles</span>
-          </Link>
+          {navItems.map(({ href, label, icon: Icon, badge, badgeColor, exact }) => {
+            const active = isActive(href, exact);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors group ${
+                  active
+                    ? "bg-red-600/10 text-red-400 font-semibold"
+                    : "text-slate-400 hover:bg-slate-800/60 hover:text-white"
+                }`}
+              >
+                <Icon
+                  size={18}
+                  className={
+                    active
+                      ? "text-red-400"
+                      : "text-slate-400 group-hover:text-white transition-colors"
+                  }
+                />
+                <span>{label}</span>
+                {badge && (
+                  <span
+                    className={`ml-auto ${badgeColor} text-white text-[10px] font-bold px-2 py-0.5 rounded-full`}
+                  >
+                    {badge}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
 
-          <div className="pt-8 mb-4">
+          <div className="pt-6 pb-2">
             <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
               Sistema
             </p>
           </div>
 
-          <Link href="/admin/configuracion" className="flex items-center gap-3 px-4 py-3 hover:bg-slate-800/60 hover:text-white rounded-xl font-medium transition-colors group">
-            <Settings size={18} className="text-slate-400 group-hover:text-white transition-colors" /> 
-            <span>Configuración</span>
-          </Link>
+          {systemItems.map(({ href, label, icon: Icon }) => {
+            const active = isActive(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors group ${
+                  active
+                    ? "bg-red-600/10 text-red-400 font-semibold"
+                    : "text-slate-400 hover:bg-slate-800/60 hover:text-white"
+                }`}
+              >
+                <Icon
+                  size={18}
+                  className={
+                    active
+                      ? "text-red-400"
+                      : "text-slate-400 group-hover:text-white transition-colors"
+                  }
+                />
+                <span>{label}</span>
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="p-4 border-t border-slate-800/50 space-y-2">
@@ -68,9 +129,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 min-h-screen pb-12">
-        {children}
-      </main>
+      <main className="flex-1 ml-64 min-h-screen pb-12">{children}</main>
     </div>
   );
 }
