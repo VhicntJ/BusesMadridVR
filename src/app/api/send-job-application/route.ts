@@ -20,7 +20,7 @@ const allowedCvMimeTypes = new Set([
 const allowedCvExtensions = new Set([".pdf", ".doc", ".docx"]);
 
 export async function POST(request: Request) {
-  let blobUrl: string | null = null;
+  let storedPath: string | null = null;
   try {
     // 1. Validar solicitud (origen, rate limit, etc)
     const validation = await validateRequest(request, {
@@ -118,8 +118,7 @@ export async function POST(request: Request) {
       contentType: curriculum.type,
     });
 
-    blobUrl = blob.url; // Guardar URL del blob
-    storedPath = blob.url; // Para compatibilidad con código existente
+    storedPath = blob.url; // URL de Vercel Blob para guardar en BD
 
     // 7. Guardar datos en base de datos (transacción)
     const pool = getDbPool();

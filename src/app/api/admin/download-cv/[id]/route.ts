@@ -7,8 +7,9 @@ export const runtime = "nodejs";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // 1. Verificar autenticación
     const token = request.cookies.get("bm_admin_session")?.value;
@@ -27,14 +28,14 @@ export async function GET(
       `SELECT nombre_original, ruta, mime_type
        FROM bm_postulaciones_archivos
        WHERE id = ? AND tipo = 'curriculum'`,
-      [params.id]
+      [id]
     );
 
     if (!Array.isArray(rows) || rows.length === 0) {
       return NextResponse.json({ error: "CV no encontrado" }, { status: 404 });
     }
 
-    const file = rows[0] as any;
+    const file = rows[0] as { nombre_original: string; ruta: string; mime_type: string };
     const blobUrl = file.ruta; // URL de Vercel Blob
 
     // 3. Redirigir a la URL del blob
