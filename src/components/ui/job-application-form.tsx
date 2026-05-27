@@ -173,8 +173,6 @@ export function JobApplicationForm({ onCancel }: JobApplicationFormProps) {
   });
 
   const region = watch("region");
-  const rut = watch("rut");
-  const telefono = watch("telefono");
 
   const onSubmit = async (data: FormData) => {
     setToast(null);
@@ -337,9 +335,9 @@ export function JobApplicationForm({ onCancel }: JobApplicationFormProps) {
         <div>
           <label className="block text-sm font-semibold text-slate-900">RUT</label>
           <input
-            {...register("rut")}
-            value={rut}
-            onChange={handleRutChange}
+            {...register("rut", {
+              onChange: handleRutChange,
+            })}
             type="text"
             placeholder="12.345.678-9"
             maxLength={rutMaxLength}
@@ -374,9 +372,9 @@ export function JobApplicationForm({ onCancel }: JobApplicationFormProps) {
         <div>
           <label className="block text-sm font-semibold text-slate-900">Teléfono</label>
           <input
-            {...register("telefono")}
-            value={telefono}
-            onChange={handlePhoneChange}
+            {...register("telefono", {
+              onChange: handlePhoneChange,
+            })}
             type="tel"
             placeholder="+56 9 1234 5678"
             maxLength={phoneMaxLength}
