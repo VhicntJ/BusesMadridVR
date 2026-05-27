@@ -1,10 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Briefcase, X } from "lucide-react";
 
-import { JobApplicationForm } from "@/components/ui/job-application-form";
+// Lazy load del formulario pesado
+const JobApplicationForm = lazy(() =>
+  import("@/components/ui/job-application-form").then((mod) => ({
+    default: mod.JobApplicationForm,
+  }))
+);
 
 type JobApplicationModalProps = {
   isOpen: boolean;
@@ -30,21 +35,23 @@ export function JobApplicationModal({ isOpen, onClose }: JobApplicationModalProp
   };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isOpen && (
         <>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             onClick={handleClose}
             className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm"
           />
           <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 py-8">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
               className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl"
             >
               {/* Header */}
@@ -66,7 +73,15 @@ export function JobApplicationModal({ isOpen, onClose }: JobApplicationModalProp
                 </button>
               </div>
 
-              <JobApplicationForm onCancel={handleClose} />
+              <Suspense
+                fallback={
+                  <div className="flex items-center justify-center p-12">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                  </div>
+                }
+              >
+                <JobApplicationForm onCancel={handleClose} />
+              </Suspense>
             </motion.div>
           </div>
         </>
