@@ -55,7 +55,7 @@ Thumbs.db
 *.avi
 *.mkv
 
-# Project-specific
+# Project-specific (archivos de desarrollo local)
 AGENTS.md
 CLAUDE.md
 Buses-Madrid-Minera-la-florida.mp4
@@ -66,9 +66,8 @@ BACKEND_SUMMARY.md
 CHANGELOG.md
 QUICK_START.md
 vjuliode_paginaweb.sql
-SECURITY.md
 generate-hash.mjs
-scripts
+scripts/
 
 # Archivos SQL con datos reales (mantener solo structure.sql si es necesario)
 *.sql
