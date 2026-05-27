@@ -48,12 +48,13 @@ export async function GET() {
         status: "✅ SUCCESS",
         message: "Connection successful",
       });
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as { message?: string; code?: string };
       results.push({
         host,
         status: "❌ FAILED",
-        message: error.message || "Unknown error",
-        code: error.code,
+        message: err.message || "Unknown error",
+        code: err.code,
       });
     }
   }

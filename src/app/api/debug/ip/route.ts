@@ -13,7 +13,7 @@ export async function GET() {
       outgoingIP: data.ip,
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to get IP" },
       { status: 500 }
