@@ -17,7 +17,6 @@ export const navItems = [
   { label: "Calidad", href: "#calidad" },
   { label: "Nosotros", href: "#nosotros" },
   { label: "Clientes", href: "#clientes" },
-  { label: "Contacto", href: "#contacto" },
 ] as const;
 
 export const services = [
@@ -87,13 +86,13 @@ export const fleet = [
   },
   {
     title: "Bus Estándar Minero",
-    image: "/images/fotos/IMG_9167.webp",
+    image: "/images/fotos/IMG_9163.webp",
     capacity: "42 pasajeros",
     use: "Faena minera",
   },
   {
     title: "Sprinter Ejecutivo",
-    image: "/images/fotos/IMG_9163.webp",
+    image: "/images/fotos/IMG_9167.webp",
     capacity: "16 pasajeros",
     use: "Traslado ejecutivo",
   },

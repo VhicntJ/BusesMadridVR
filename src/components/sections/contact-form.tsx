@@ -169,22 +169,10 @@ export function ContactForm() {
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Button type="submit" size="lg" disabled={isSubmitting}>
-              <SendHorizontal className="h-4 w-4" />
-              {isSubmitting ? "Enviando..." : "Enviar mensaje"}
-            </Button>
-
-            <Link
-              href="https://wa.me/56900000000"
-              target="_blank"
-              rel="noreferrer"
-              className={buttonVariants({ variant: "secondary", size: "lg" })}
-            >
-              <MessageCircleMore className="h-4 w-4 text-emerald-600" />
-              WhatsApp
-            </Link>
-          </div>
+          <Button type="submit" size="lg" disabled={isSubmitting} className="w-full">
+            <SendHorizontal className="h-4 w-4" />
+            {isSubmitting ? "Enviando..." : "Enviar mensaje"}
+          </Button>
 
         </form>
       </CardContent>

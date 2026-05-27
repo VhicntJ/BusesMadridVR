@@ -293,7 +293,7 @@ export function Navbar({ items }: NavbarProps) {
           <div className="hidden items-center gap-2 min-[1051px]:flex">
             <Link
               href="#contacto"
-              className={buttonVariants({ variant: "secondary", size: "default" })}
+              className="inline-flex h-11 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-slate-900 transition-all duration-300 hover:bg-slate-100 hover:-translate-y-0.5"
             >
               Contacto
             </Link>

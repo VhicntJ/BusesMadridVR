@@ -40,7 +40,7 @@ export function JobApplicationModal({ isOpen, onClose }: JobApplicationModalProp
       <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 py-8">
         <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-150">
           {/* Header */}
-          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-primary/10 to-amber-100/10 px-6 py-4 shadow-sm">
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-primary/20 p-2">
                 <Briefcase className="h-5 w-5 text-primary" />
