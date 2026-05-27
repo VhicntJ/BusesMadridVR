@@ -76,6 +76,7 @@ Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 1. **Sube el código a GitHub** (si no lo has hecho)
 2. **Configura MySQL para conexiones remotas** en tu cPanel
 3. **Crea las variables de entorno** en Vercel (ver `.env.vercel.example`)
+4. **Conecta Vercel Blob Storage** para almacenar CVs (ver `VERCEL_BLOB_SETUP.md`)
 
 ### Deployment
 

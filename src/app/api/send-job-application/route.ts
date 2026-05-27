@@ -1,9 +1,6 @@
 // src/app/api/send-job-application/route.ts
-import { promises as fs } from "fs";
 import path from "path";
-import crypto from "crypto";
-import { gzip } from "zlib";
-import { promisify } from "util";
+import { put } from "@vercel/blob";
 
 import { validateRequest, errorResponse, successResponse, getClientIp } from "@/lib/security";
 import { verifyRecaptcha } from "@/lib/recaptcha-service";
@@ -15,7 +12,6 @@ import {
 import { jobApplicationSchema } from "@/lib/validation-schemas";
 import { getDbPool, type ResultSetHeader } from "@/lib/db";
 
-const gzipAsync = promisify(gzip);
 const allowedCvMimeTypes = new Set([
   "application/pdf",
   "application/msword",
@@ -24,7 +20,7 @@ const allowedCvMimeTypes = new Set([
 const allowedCvExtensions = new Set([".pdf", ".doc", ".docx"]);
 
 export async function POST(request: Request) {
-  let storedPath: string | null = null;
+  let blobUrl: string | null = null;
   try {
     // 1. Validar solicitud (origen, rate limit, etc)
     const validation = await validateRequest(request, {
@@ -107,29 +103,23 @@ export async function POST(request: Request) {
       `Job application from ${validatedData.nombres} ${validatedData.apellidos} for position ${validatedData.cargo} (reCAPTCHA score: ${recaptchaCheck.score})`
     );
 
-    // 6. Guardar currículum en servidor
-    const uploadDir = process.env.CV_UPLOAD_DIR;
-    if (!uploadDir) {
-      throw new Error("CV_UPLOAD_DIR not configured");
-    }
-
-    await fs.mkdir(uploadDir, { recursive: true });
-
-    const fileId = crypto.randomUUID();
+    // 6. Guardar currículum en Vercel Blob Storage
+    const timestamp = Date.now();
     const normalizedExtension = allowedCvExtensions.has(extension)
       ? extension
       : mimeToExtension[curriculum.type] || ".pdf";
-    let storedFileName = `${Date.now()}-${fileId}${normalizedExtension}`;
-    let fileBuffer = Buffer.from(await curriculum.arrayBuffer());
 
-    const compressUploads = process.env.CV_COMPRESS_UPLOADS === "true";
-    if (compressUploads) {
-      fileBuffer = await gzipAsync(fileBuffer);
-      storedFileName = `${storedFileName}.gz`;
-    }
+    const blobFileName = `cv/${validatedData.rut.replace(/\./g, '')}_${timestamp}${normalizedExtension}`;
 
-    storedPath = path.join(uploadDir, storedFileName);
-    await fs.writeFile(storedPath, fileBuffer);
+    // Subir a Vercel Blob
+    const blob = await put(blobFileName, curriculum, {
+      access: "public", // Cambiar a "private" si solo admins deben verlo
+      addRandomSuffix: false,
+      contentType: curriculum.type,
+    });
+
+    blobUrl = blob.url; // Guardar URL del blob
+    storedPath = blob.url; // Para compatibilidad con código existente
 
     // 7. Guardar datos en base de datos (transacción)
     const pool = getDbPool();
@@ -173,10 +163,10 @@ export async function POST(request: Request) {
         [
           postulacionId,
           safeOriginalName,
-          storedFileName,
-          storedPath,
+          blobFileName,
+          storedPath, // URL de Vercel Blob
           curriculum.type || "application/octet-stream",
-          fileBuffer.length,
+          curriculum.size,
         ]
       );
 
@@ -229,14 +219,8 @@ export async function POST(request: Request) {
       "Application submitted successfully"
     );
   } catch (error) {
-    try {
-      // Limpia archivo si falló después de guardarlo
-      if (storedPath) {
-        await fs.unlink(storedPath);
-      }
-    } catch {
-      // ignore cleanup errors
-    }
+    // En Vercel Blob, no necesitamos limpiar archivos manualmente en caso de error
+    // Los archivos no usados se pueden limpiar después con un cron job si es necesario
     console.error("Error in job application route:", error);
     return errorResponse("Internal server error", 500);
   }
