@@ -1,12 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  Globe2,
   Mail,
   MapPin,
-  MessageCircle,
-  Phone,
-  Users,
 } from "lucide-react";
 
 type NavItem = {
@@ -106,10 +102,6 @@ export function SiteFooter({ navItems }: SiteFooterProps) {
             </h4>
             <div className="brand-on-surface-muted mt-3 space-y-2 text-sm md:mt-4 md:space-y-3">
               <p className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-primary" />
-                +56 9 XXXX XXXX
-              </p>
-              <p className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-primary" />
                 contacto@busesmadrid.cl
               </p>
@@ -122,22 +114,6 @@ export function SiteFooter({ navItems }: SiteFooterProps) {
                 Santiago, Chile
               </p>
             </div>
-            <div className="mt-3 flex gap-2.5 md:mt-4 md:gap-3">
-              <a
-                href="#"
-                className="brand-surface-2 brand-on-surface-muted inline-flex h-9 w-9 items-center justify-center rounded-lg hover:bg-primary hover:text-slate-950 transition-colors"
-                aria-label="LinkedIn"
-              >
-                <Globe2 className="h-4 w-4" />
-              </a>
-              <a
-                href="#"
-                className="brand-surface-2 brand-on-surface-muted inline-flex h-9 w-9 items-center justify-center rounded-lg hover:bg-primary hover:text-slate-950 transition-colors"
-                aria-label="Facebook"
-              >
-                <Users className="h-4 w-4" />
-              </a>
-            </div>
           </div>
         </div>
       </div>
@@ -145,6 +121,17 @@ export function SiteFooter({ navItems }: SiteFooterProps) {
       <div className="brand-surface-border border-t">
         <div className="container-pro brand-on-surface-muted py-4 text-center text-xs md:py-6 md:text-sm">
           <p>© {new Date().getFullYear()} Buses Madrid. Todos los derechos reservados.</p>
+          <p className="mt-2 text-xs opacity-60">
+            Página desarrollada por{" "}
+            <a
+              href="https://vralianzadigital.cl/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-primary transition-colors"
+            >
+              V&R Alianza Digital SpA
+            </a>
+          </p>
         </div>
       </div>
     </footer>

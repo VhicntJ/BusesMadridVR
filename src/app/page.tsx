@@ -17,7 +17,6 @@ import { SectionHeading } from "@/components/sections/section-heading";
 import { ServicesGrid } from "@/components/sections/services-grid";
 import { StatsSection } from "@/components/sections/stats-section";
 import { Navbar } from "@/components/ui/navbar";
-import { ThemeVariantSwitcher } from "@/components/ui/theme-variant-switcher";
 import { VideoOperationsSection } from "@/components/sections/video-operations-section";
 import {
   clientLogos,
@@ -112,7 +111,6 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <Navbar items={navItems} />
-      <ThemeVariantSwitcher />
 
       <HeroVideo
         subtitle="Más de 35 años ofreciendo transporte seguro, puntual y confortable. Transportamos personas, empresas e industrias con excelencia operacional."
