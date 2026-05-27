@@ -114,6 +114,10 @@ export function SiteFooter({ navItems }: SiteFooterProps) {
                 contacto@busesmadrid.cl
               </p>
               <p className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-primary" />
+                cotizacion@busesmadrid.cl
+              </p>
+              <p className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-primary" />
                 Santiago, Chile
               </p>
@@ -132,15 +136,6 @@ export function SiteFooter({ navItems }: SiteFooterProps) {
                 aria-label="Facebook"
               >
                 <Users className="h-4 w-4" />
-              </a>
-              <a
-                href="https://wa.me/56900000000"
-                target="_blank"
-                rel="noreferrer"
-                className="brand-surface-2 brand-on-surface-muted inline-flex h-9 w-9 items-center justify-center rounded-lg hover:bg-emerald-600 hover:text-white transition-colors"
-                aria-label="WhatsApp"
-              >
-                <MessageCircle className="h-4 w-4" />
               </a>
             </div>
           </div>
