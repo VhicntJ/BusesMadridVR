@@ -116,7 +116,7 @@ export default function Home() {
 
       <HeroVideo
         subtitle="Más de 35 años ofreciendo transporte seguro, puntual y confortable. Transportamos personas, empresas e industrias con excelencia operacional."
-        videoSrc="/images/fotos/Buses-Madrid-Minera-la-florida.mp4"
+        videoSrc="https://res.cloudinary.com/dcwrs26wf/video/upload/v1779869206/Buses-Madrid-Minera-La-Florida_xzbgqq.mp4"
         services={heroServices}
         ctaButtons={[
           { label: "Cotizar", href: "#contacto", variant: "default" },
