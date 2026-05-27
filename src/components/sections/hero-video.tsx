@@ -47,6 +47,7 @@ export function HeroVideo({
           alt="Fondo Buses Madrid"
           fill
           priority
+          quality={85}
           sizes="100vw"
           className={cn(
             "object-cover transition-opacity duration-500",
@@ -63,6 +64,7 @@ export function HeroVideo({
           muted
           loop
           playsInline
+          preload="metadata"
           onCanPlay={() => setIsVideoAvailable(true)}
           onError={() => setIsVideoAvailable(false)}
         />

@@ -5,11 +5,15 @@ import "./globals.css";
 const manrope = Manrope({
   variable: "--font-manrope",
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
 });
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
 });
 import { WebVitalsProvider } from "@/components/providers/web-vitals-provider";
 import { RecaptchaProvider } from "@/components/providers/recaptcha-provider";
