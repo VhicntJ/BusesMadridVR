@@ -20,7 +20,7 @@
     "lucide-react": "^1.8.0",
     "mysql2": "^3.11.5",
     "next": "^15.5.15",
-    "nodemailer": "^6.9.14",
+    "nodemailer": "^8.0.5",
     "rate-limiter-flexible": "^3.0.6",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
