@@ -12,6 +12,7 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
 });
 import { WebVitalsProvider } from "@/components/providers/web-vitals-provider";
+import { RecaptchaProvider } from "@/components/providers/recaptcha-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://busesmadrid.cl"),
@@ -91,7 +92,9 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <WebVitalsProvider />
-        {children}
+        <RecaptchaProvider>
+          {children}
+        </RecaptchaProvider>
       </body>
     </html>
   );

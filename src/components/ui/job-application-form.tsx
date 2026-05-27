@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, type ChangeEvent } from "react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { CheckCircle2, Paperclip, Send } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import { Toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import {
   regionesChile,
@@ -141,8 +143,12 @@ type JobApplicationFormProps = {
 };
 
 export function JobApplicationForm({ onCancel }: JobApplicationFormProps) {
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [success, setSuccess] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ variant: "success" | "error"; message: string } | null>(
+    null
+  );
 
   const {
     register,
@@ -171,9 +177,47 @@ export function JobApplicationForm({ onCancel }: JobApplicationFormProps) {
   const telefono = watch("telefono");
 
   const onSubmit = async (data: FormData) => {
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setSuccess(true);
-    console.log("Postulación enviada:", data);
+    setToast(null);
+
+    try {
+      // Obtener token de reCAPTCHA
+      if (!executeRecaptcha) {
+        throw new Error("reCAPTCHA no está disponible");
+      }
+
+      const recaptchaToken = await executeRecaptcha("job_application");
+
+      // Crear FormData para enviar archivo
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        if (key === "curriculum" && value && value[0]) {
+          formData.append(key, value[0]);
+        } else if (key !== "curriculum") {
+          formData.append(key, String(value));
+        }
+      });
+      formData.append("recaptchaToken", recaptchaToken);
+
+      // Enviar a la API (multipart/form-data)
+      const response = await fetch("/api/send-job-application", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Error al enviar la postulación");
+      }
+
+      setSuccess(true);
+      setToast({ variant: "success", message: "Postulación enviada correctamente." });
+      console.log("✅ Postulación enviada exitosamente");
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Error desconocido";
+      setToast({ variant: "error", message: errorMessage });
+      console.error("❌ Error:", errorMessage);
+    }
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -195,12 +239,20 @@ export function JobApplicationForm({ onCancel }: JobApplicationFormProps) {
   const resetForm = () => {
     setSuccess(false);
     setFileName(null);
+    setToast(null);
     reset();
   };
 
   if (success) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 px-6 py-16 text-center">
+        {toast ? (
+          <Toast
+            variant={toast.variant}
+            message={toast.message}
+            onClose={() => setToast(null)}
+          />
+        ) : null}
         <div className="rounded-full bg-green-100 p-3">
           <CheckCircle2 className="h-10 w-10 text-green-600" />
         </div>
@@ -231,6 +283,14 @@ export function JobApplicationForm({ onCancel }: JobApplicationFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 px-6 py-6">
+      {toast ? (
+        <Toast
+          variant={toast.variant}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
+      ) : null}
+
       <div className="mb-6 rounded-lg bg-slate-50 p-4">
         <p className="text-sm text-slate-600">
           Gracias por tu interés en formar parte de nuestro equipo. Te invitamos a completar el

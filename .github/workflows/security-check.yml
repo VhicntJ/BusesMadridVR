@@ -1,0 +1,61 @@
+# Verificación de seguridad automática
+name: Security Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Check for secrets in code
+      run: |
+        echo "🔍 Verificando que no haya secrets en el código..."
+
+        # Verificar que .env no esté en el repo
+        if git ls-files | grep -E "^\.env$"; then
+          echo "❌ ERROR: Archivo .env encontrado en el repositorio"
+          exit 1
+        fi
+
+        # Verificar que no haya passwords hardcoded
+        if grep -r -i "password.*=.*['\"].*['\"]" src/ --include="*.ts" --include="*.tsx" --include="*.js" | grep -v "process.env"; then
+          echo "❌ ERROR: Posible password hardcoded encontrado"
+          exit 1
+        fi
+
+        # Verificar que no haya API keys hardcoded
+        if grep -r -E "(api[_-]?key|secret[_-]?key).*=.*['\"][a-zA-Z0-9]{20,}['\"]" src/ --include="*.ts" --include="*.tsx"; then
+          echo "❌ ERROR: Posible API key hardcoded encontrada"
+          exit 1
+        fi
+
+        echo "✅ No se encontraron secrets hardcoded"
+
+    - name: Verify .gitignore
+      run: |
+        echo "🔍 Verificando .gitignore..."
+
+        if ! grep -q "^\.env" .gitignore; then
+          echo "❌ ERROR: .env no está en .gitignore"
+          exit 1
+        fi
+
+        if ! grep -q "\.sql" .gitignore; then
+          echo "⚠️  ADVERTENCIA: *.sql no está en .gitignore"
+        fi
+
+        echo "✅ .gitignore verificado"
+
+    - name: Check dependencies
+      run: |
+        echo "🔍 Verificando dependencias..."
+        npm install
+        npm audit --audit-level=high
+        echo "✅ Dependencias verificadas"

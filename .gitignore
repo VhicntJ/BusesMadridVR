@@ -59,3 +59,30 @@ Thumbs.db
 AGENTS.md
 CLAUDE.md
 Buses-Madrid-Minera-la-florida.mp4
+busesmad_paginaweb.sql
+ARCHITECTURE.md
+BACKEND_SETUP.md
+BACKEND_SUMMARY.md
+CHANGELOG.md
+QUICK_START.md
+vjuliode_paginaweb.sql
+SECURITY.md
+generate-hash.mjs
+scripts
+
+# Archivos SQL con datos reales (mantener solo structure.sql si es necesario)
+*.sql
+!database/structure.sql
+
+# Archivos de backup
+*.backup
+*.bak
+*.old
+
+# Archivos de configuración local
+.env.production.local
+.env.development.local
+
+# Archivos de testing con datos reales
+test-data.json
+seed-data.json

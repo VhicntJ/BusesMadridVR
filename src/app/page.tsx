@@ -115,7 +115,6 @@ export default function Home() {
       <ThemeVariantSwitcher />
 
       <HeroVideo
-        title="Buses Madrid"
         subtitle="Más de 35 años ofreciendo transporte seguro, puntual y confortable. Transportamos personas, empresas e industrias con excelencia operacional."
         videoSrc="/images/fotos/Buses-Madrid-Minera-la-florida.mp4"
         services={heroServices}

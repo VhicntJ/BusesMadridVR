@@ -16,7 +16,6 @@ type HeroService = {
 };
 
 type HeroVideoProps = {
-  title: string;
   subtitle: string;
   videoSrc: string;
   fallbackImageSrc?: string;
@@ -25,7 +24,6 @@ type HeroVideoProps = {
 };
 
 export function HeroVideo({
-  title,
   subtitle,
   videoSrc,
   fallbackImageSrc = "/images/fotos/Exterior.webp",
