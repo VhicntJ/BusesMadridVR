@@ -43,6 +43,13 @@ interface ContactData {
   ip_origen?: string;
 }
 
+interface EmailData {
+  to: string;
+  subject: string;
+  html: string;
+  replyTo?: string;
+}
+
 class DbProxyClient {
   private apiUrl: string;
   private apiKey: string;
@@ -56,7 +63,7 @@ class DbProxyClient {
     }
   }
 
-  private async request<T>(action: string, data: JobApplicationData | ContactData): Promise<T> {
+  private async request<T>(action: string, data: JobApplicationData | ContactData | EmailData): Promise<T> {
     try {
       console.log(`🔄 DB Proxy request: ${action}`);
 
@@ -110,8 +117,8 @@ class DbProxyClient {
   /**
    * Enviar email a través del proxy
    */
-  async sendEmail(data: { to: string; subject: string; html: string; replyTo?: string }): Promise<{ sent: boolean }> {
-    return this.request<{ sent: boolean }>('send_email', data as unknown as JobApplicationData | ContactData);
+  async sendEmail(data: EmailData): Promise<{ sent: boolean }> {
+    return this.request<{ sent: boolean }>('send_email', data);
   }
 }
 
@@ -125,4 +132,4 @@ export function getDbProxyClient(): DbProxyClient {
   return dbProxyClient;
 }
 
-export type { JobApplicationData, ContactData };
+export type { JobApplicationData, ContactData, EmailData };

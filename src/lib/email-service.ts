@@ -159,34 +159,107 @@ export function generateJobApplicationEmailHTML(data: {
 }): string {
   return `
     <!DOCTYPE html>
-    <html>
+    <html lang="es">
     <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Confirmación de Postulación - Buses Madrid</title>
         <style>
-            body { font-family: Arial, sans-serif; }
-            .container { max-width: 600px; margin: 0 auto; }
-            .header { background-color: #1f2937; color: white; padding: 20px; text-align: center; }
-            .content { padding: 20px; border: 1px solid #e5e7eb; }
-            .message { color: #4b5563; line-height: 1.6; }
-            .footer { background-color: #f3f4f6; padding: 15px; text-align: center; font-size: 12px; color: #6b7280; }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+                line-height: 1.6;
+                margin: 0;
+                padding: 0;
+                background-color: #f5f5f5;
+            }
+            .container {
+                max-width: 600px;
+                margin: 20px auto;
+                background-color: #ffffff;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .header {
+                background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+                color: white;
+                padding: 30px 20px;
+                text-align: center;
+            }
+            .header h1 {
+                margin: 0;
+                font-size: 24px;
+                font-weight: 600;
+            }
+            .logo {
+                font-size: 28px;
+                font-weight: 700;
+                margin-bottom: 10px;
+                letter-spacing: 1px;
+            }
+            .content {
+                padding: 30px;
+                color: #374151;
+            }
+            .message p {
+                margin: 15px 0;
+            }
+            .highlight {
+                background-color: #f3f4f6;
+                padding: 15px;
+                border-left: 4px solid #FFBF00;
+                margin: 20px 0;
+                border-radius: 4px;
+            }
+            .footer {
+                background-color: #f9fafb;
+                padding: 20px;
+                text-align: center;
+                font-size: 13px;
+                color: #6b7280;
+                border-top: 1px solid #e5e7eb;
+            }
+            .footer a {
+                color: #FFBF00;
+                text-decoration: none;
+            }
+            strong { color: #1f2937; }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="header">
+                <div class="logo">🚌 BUSES MADRID</div>
                 <h1>¡Hemos recibido tu postulación!</h1>
             </div>
             <div class="content">
                 <div class="message">
                     <p>Hola <strong>${escapeHtml(data.nombres)} ${escapeHtml(data.apellidos)}</strong>,</p>
                     <p>Agradecemos sinceramente tu interés en unirte al equipo de <strong>Buses Madrid</strong>.</p>
-                    <p><strong>Posición solicitada:</strong> ${escapeHtml(data.cargo)}</p>
-                    <p>Hemos recibido tu postulación correctamente. Nuestro equipo de Recursos Humanos revisará tu perfil y nos comunicaremos contigo en los próximos días si tu candidatura avanza en el proceso de selección.</p>
-                    <p>Agradecemos tu paciencia y dedicación.</p>
-                    <p><strong>¡Mucho éxito!</strong></p>
+
+                    <div class="highlight">
+                        <strong>📋 Posición solicitada:</strong> ${escapeHtml(data.cargo)}
+                    </div>
+
+                    <p>Hemos recibido tu postulación correctamente y se encuentra en revisión. Nuestro equipo de Recursos Humanos evaluará tu perfil y experiencia.</p>
+
+                    <p>Si tu candidatura avanza en el proceso de selección, nos comunicaremos contigo a través de este correo (<strong>${escapeHtml(data.correo)}</strong>) en los próximos días.</p>
+
+                    <p>Te recomendamos estar atento a tu bandeja de entrada y revisar también la carpeta de spam.</p>
+
+                    <p><strong>¡Te deseamos mucho éxito en el proceso!</strong></p>
+
+                    <p>Saludos cordiales,<br>
+                    <strong>Equipo de Recursos Humanos</strong><br>
+                    Buses Madrid</p>
                 </div>
             </div>
             <div class="footer">
-                <p>Buses Madrid - Sistema de Postulaciones</p>
+                <p><strong>Buses Madrid</strong> - Transporte seguro, confiable y profesional</p>
+                <p>📧 <a href="mailto:contacto@busesmadrid.cl">contacto@busesmadrid.cl</a> | 🌐 <a href="https://www.busesmadrid.cl">www.busesmadrid.cl</a></p>
+                <p style="margin-top: 15px; font-size: 11px; color: #9ca3af;">
+                    Este es un correo automático, por favor no responder. Si tienes consultas, escríbenos a contacto@busesmadrid.cl
+                </p>
             </div>
         </div>
     </body>
