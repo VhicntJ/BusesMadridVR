@@ -5,7 +5,6 @@ import { put } from "@vercel/blob";
 import { validateRequest, errorResponse, successResponse, getClientIp } from "@/lib/security";
 import { verifyRecaptcha } from "@/lib/recaptcha-service";
 import {
-  sendEmail,
   generateJobApplicationEmailHTML,
   generateJobApplicationAdminEmailHTML,
 } from "@/lib/email-service";
