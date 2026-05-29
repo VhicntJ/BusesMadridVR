@@ -34,7 +34,9 @@ export function getDbPool(): Pool {
     queueLimit: 0,
     timezone: "Z",
     charset: "utf8mb4",
-    connectTimeout: 10000, // 10 seconds
+    connectTimeout: 30000, // 30 seconds para conexiones remotas
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0,
   });
 
   return pool;

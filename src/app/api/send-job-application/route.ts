@@ -10,7 +10,7 @@ import {
   generateJobApplicationAdminEmailHTML,
 } from "@/lib/email-service";
 import { jobApplicationSchema } from "@/lib/validation-schemas";
-import { getDbPool, type ResultSetHeader } from "@/lib/db";
+import { getDbProxyClient } from "@/lib/db-proxy-client";
 
 const allowedCvMimeTypes = new Set([
   "application/pdf",
@@ -28,10 +28,8 @@ export async function POST(request: Request) {
     const requiredEnvVars = [
       "RECAPTCHA_SECRET_KEY",
       "BLOB_READ_WRITE_TOKEN",
-      "DB_HOST",
-      "DB_USER",
-      "DB_PASSWORD",
-      "DB_NAME",
+      "DB_PROXY_URL",
+      "DB_PROXY_API_KEY",
       "SMTP_HOST",
       "SMTP_USER",
       "SMTP_PASSWORD",
@@ -160,67 +158,34 @@ export async function POST(request: Request) {
     storedPath = blob.url; // URL de Vercel Blob para guardar en BD
     console.log(`✅ Curriculum uploaded to: ${storedPath}`);
 
-    // 7. Guardar datos en base de datos (transacción)
-    console.log("💾 Saving to database...");
-    const pool = getDbPool();
-    const connection = await pool.getConnection();
+    // 7. Guardar datos en base de datos vía proxy
+    console.log("💾 Saving to database via proxy...");
+    const dbProxy = getDbProxyClient();
 
-    let postulacionId: number | null = null;
-    try {
-      await connection.beginTransaction();
-      console.log("🔄 Transaction started");
+    const dbResult = await dbProxy.insertJobApplication({
+      nombres: validatedData.nombres,
+      apellidos: validatedData.apellidos,
+      rut: validatedData.rut,
+      correo: validatedData.correo,
+      telefono: validatedData.telefono,
+      region: validatedData.region,
+      comuna: validatedData.comuna,
+      cargo: validatedData.cargo,
+      experiencia: validatedData.experiencia,
+      licencia: validatedData.licencia || null,
+      disponibilidad: validatedData.disponibilidad,
+      experiencia_detalle: validatedData.experiencia_detalle,
+      notas_internas: `Trabajado antes: ${validatedData.trabajado_antes}`,
+      ip_origen: ipAddress,
+      cv_url: storedPath,
+      cv_original_name: safeOriginalName,
+      cv_stored_name: blobFileName,
+      cv_mime_type: curriculum.type || "application/octet-stream",
+      cv_size: curriculum.size,
+    });
 
-      const [postulacionResult] = await connection.execute<ResultSetHeader>(
-        `INSERT INTO bm_postulaciones
-          (nombres, apellidos, rut, email, telefono, region, comuna, cargo_postulado, nivel_experiencia,
-           licencia_conducir, disponibilidad, mensaje, estado, notas_internas, ip_origen)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'nueva', ?, ?)`
-        ,
-        [
-          validatedData.nombres,
-          validatedData.apellidos,
-          validatedData.rut,
-          validatedData.correo,
-          validatedData.telefono,
-          validatedData.region,
-          validatedData.comuna,
-          validatedData.cargo,
-          validatedData.experiencia,
-          validatedData.licencia || null,
-          validatedData.disponibilidad,
-          validatedData.experiencia_detalle,
-          `Trabajado antes: ${validatedData.trabajado_antes}`,
-          ipAddress,
-        ]
-      );
-
-      postulacionId = postulacionResult.insertId;
-
-      await connection.execute<ResultSetHeader>(
-        `INSERT INTO bm_postulaciones_archivos
-          (postulacion_id, tipo, nombre_original, nombre_almacenado, ruta, mime_type, tamanio_bytes)
-         VALUES (?, 'curriculum', ?, ?, ?, ?, ?)`
-        ,
-        [
-          postulacionId,
-          safeOriginalName,
-          blobFileName,
-          storedPath, // URL de Vercel Blob
-          curriculum.type || "application/octet-stream",
-          curriculum.size,
-        ]
-      );
-
-      await connection.commit();
-      console.log(`✅ Database transaction committed. Postulacion ID: ${postulacionId}`);
-    } catch (dbError) {
-      await connection.rollback();
-      console.error("❌ Database transaction failed, rolling back:", dbError);
-      throw dbError;
-    } finally {
-      connection.release();
-      console.log("🔓 Database connection released");
-    }
+    const postulacionId = dbResult.postulacionId;
+    console.log(`✅ Database save successful. Postulacion ID: ${postulacionId}`);
 
     // 8. Generar HTMLs de correos
     console.log("📧 Generating email HTML...");
