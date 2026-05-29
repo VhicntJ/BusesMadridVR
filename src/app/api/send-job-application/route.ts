@@ -22,20 +22,51 @@ const allowedCvExtensions = new Set([".pdf", ".doc", ".docx"]);
 export async function POST(request: Request) {
   let storedPath: string | null = null;
   try {
+    console.log("📥 Job application request received");
+
+    // 0. Verificar variables de entorno críticas
+    const requiredEnvVars = [
+      "RECAPTCHA_SECRET_KEY",
+      "BLOB_READ_WRITE_TOKEN",
+      "DB_HOST",
+      "DB_USER",
+      "DB_PASSWORD",
+      "DB_NAME",
+      "SMTP_HOST",
+      "SMTP_USER",
+      "SMTP_PASSWORD",
+      "EMAIL_FROM",
+      "EMAIL_JOBS_TO",
+    ];
+
+    const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
+    if (missingVars.length > 0) {
+      console.error("❌ Missing environment variables:", missingVars.join(", "));
+      return errorResponse(
+        `Server configuration error. Missing: ${missingVars.join(", ")}`,
+        500
+      );
+    }
+
     // 1. Validar solicitud (origen, rate limit, etc)
     const validation = await validateRequest(request, {
       allowedContentTypes: ["multipart/form-data"],
     });
     if (!validation.valid) {
+      console.error("❌ Validation failed:", validation.error);
       return errorResponse(validation.error || "Invalid request", 400);
     }
 
+    console.log("✅ Request validation passed");
+
     // 2. Parsear body (multipart)
+    console.log("📝 Parsing form data...");
     const formData = await request.formData();
     const getField = (name: string) => {
       const value = formData.get(name);
       return typeof value === "string" ? value : "";
     };
+    console.log("✅ Form data parsed");
 
     const data = {
       nombres: getField("nombres"),
@@ -55,19 +86,25 @@ export async function POST(request: Request) {
     };
 
     // 3. Validar schema de Zod
+    console.log("🔍 Validating form data with schema...");
     const validationResult = jobApplicationSchema.safeParse(data);
     if (!validationResult.success) {
+      console.error("❌ Schema validation failed:", validationResult.error.flatten());
       return errorResponse("Invalid form data", 400, validationResult.error.flatten());
     }
 
     const validatedData = validationResult.data;
     const ipAddress = getClientIp(request);
+    console.log("✅ Schema validation passed");
 
     // 4. Verificar currículum
+    console.log("📄 Checking curriculum file...");
     const curriculum = formData.get("curriculum");
     if (!(curriculum instanceof File)) {
+      console.error("❌ Curriculum file not found or invalid");
       return errorResponse("El currículum es obligatorio", 400);
     }
+    console.log(`✅ Curriculum file found: ${curriculum.name} (${curriculum.size} bytes)`);
 
     const maxSizeMb = parseInt(process.env.CV_MAX_SIZE_MB || "2", 10);
     const maxSizeBytes = maxSizeMb * 1024 * 1024;
@@ -93,17 +130,19 @@ export async function POST(request: Request) {
     }
 
     // 5. Verificar reCAPTCHA
+    console.log("🔐 Verifying reCAPTCHA...");
     const recaptchaCheck = await verifyRecaptcha(validatedData.recaptchaToken, "job_application");
     if (!recaptchaCheck.success) {
-      console.warn("reCAPTCHA verification failed:", recaptchaCheck.error);
+      console.error("❌ reCAPTCHA verification failed:", recaptchaCheck.error);
       return errorResponse("reCAPTCHA verification failed", 400);
     }
 
     console.log(
-      `Job application from ${validatedData.nombres} ${validatedData.apellidos} for position ${validatedData.cargo} (reCAPTCHA score: ${recaptchaCheck.score})`
+      `✅ Job application from ${validatedData.nombres} ${validatedData.apellidos} for position ${validatedData.cargo} (reCAPTCHA score: ${recaptchaCheck.score})`
     );
 
     // 6. Guardar currículum en Vercel Blob Storage
+    console.log("☁️ Uploading curriculum to Vercel Blob...");
     const timestamp = Date.now();
     const normalizedExtension = allowedCvExtensions.has(extension)
       ? extension
@@ -119,14 +158,17 @@ export async function POST(request: Request) {
     });
 
     storedPath = blob.url; // URL de Vercel Blob para guardar en BD
+    console.log(`✅ Curriculum uploaded to: ${storedPath}`);
 
     // 7. Guardar datos en base de datos (transacción)
+    console.log("💾 Saving to database...");
     const pool = getDbPool();
     const connection = await pool.getConnection();
 
     let postulacionId: number | null = null;
     try {
       await connection.beginTransaction();
+      console.log("🔄 Transaction started");
 
       const [postulacionResult] = await connection.execute<ResultSetHeader>(
         `INSERT INTO bm_postulaciones
@@ -170,14 +212,18 @@ export async function POST(request: Request) {
       );
 
       await connection.commit();
+      console.log(`✅ Database transaction committed. Postulacion ID: ${postulacionId}`);
     } catch (dbError) {
       await connection.rollback();
+      console.error("❌ Database transaction failed, rolling back:", dbError);
       throw dbError;
     } finally {
       connection.release();
+      console.log("🔓 Database connection released");
     }
 
-    // 7. Generar HTMLs de correos
+    // 8. Generar HTMLs de correos
+    console.log("📧 Generating email HTML...");
     const userConfirmationHtml = generateJobApplicationEmailHTML({
       nombres: validatedData.nombres,
       apellidos: validatedData.apellidos,
@@ -191,7 +237,8 @@ export async function POST(request: Request) {
       cvStoragePath: storedPath,
     });
 
-    // 8. Enviar correo de confirmación al postulante
+    // 9. Enviar correo de confirmación al postulante
+    console.log("📨 Sending confirmation email to applicant...");
     const safeCargo = validatedData.cargo.replace(/[\r\n]+/g, " ").trim();
 
     await sendEmail({
@@ -199,8 +246,10 @@ export async function POST(request: Request) {
       subject: "Tu postulación ha sido recibida - Buses Madrid",
       html: userConfirmationHtml,
     });
+    console.log(`✅ Confirmation email sent to ${validatedData.correo}`);
 
-    // 9. Enviar correo al equipo de RRHH
+    // 10. Enviar correo al equipo de RRHH
+    console.log("📨 Sending notification email to HR...");
     const emailTo = process.env.EMAIL_JOBS_TO;
     if (!emailTo) {
       throw new Error("EMAIL_JOBS_TO not configured");
@@ -212,7 +261,9 @@ export async function POST(request: Request) {
       html: adminEmailHtml,
       replyTo: validatedData.correo,
     });
+    console.log(`✅ Notification email sent to ${emailTo}`);
 
+    console.log("🎉 Job application submitted successfully!");
     return successResponse(
       { postulacionId, cvFileName: safeOriginalName },
       "Application submitted successfully"
@@ -220,7 +271,15 @@ export async function POST(request: Request) {
   } catch (error) {
     // En Vercel Blob, no necesitamos limpiar archivos manualmente en caso de error
     // Los archivos no usados se pueden limpiar después con un cron job si es necesario
-    console.error("Error in job application route:", error);
+    console.error("❌❌❌ FATAL ERROR in job application route:", error);
+
+    // Log detallado del error
+    if (error instanceof Error) {
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    }
+
     return errorResponse("Internal server error", 500);
   }
 }

@@ -64,9 +64,14 @@ export function HeroVideo({
           muted
           loop
           playsInline
-          preload="metadata"
+          preload="auto"
           onCanPlay={() => setIsVideoAvailable(true)}
           onError={() => setIsVideoAvailable(false)}
+          onEnded={(e) => {
+            const video = e.currentTarget;
+            video.currentTime = 0;
+            video.play();
+          }}
         />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(13,27,45,0.42)_0%,rgba(13,27,45,0.22)_48%,rgba(13,27,45,0.72)_100%)] lg:bg-[linear-gradient(120deg,rgba(13,27,45,0.72),rgba(13,27,45,0.4)_45%,rgba(13,27,45,0.62))]" />
         <div className="absolute -left-20 top-12 h-56 w-56 rounded-full bg-primary/20 blur-3xl opacity-80 lg:opacity-100" />

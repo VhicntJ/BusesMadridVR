@@ -65,13 +65,13 @@ const validateRut = (value: string) => {
 };
 
 const normalizePhone = (value: string) => {
-  const digits = value.replace(/\D/g, "").slice(0, 11);
+  const digits = value.replace(/\D/g, "");
 
-  if (digits.startsWith("56") && digits.length > 9) {
-    return digits.slice(2, 11).slice(0, 9);
+  if (digits.startsWith("56") && digits.length > 2) {
+    return digits.slice(2);
   }
 
-  return digits.slice(0, 9);
+  return digits;
 };
 
 const formatPhone = (value: string) => {
@@ -81,9 +81,12 @@ const formatPhone = (value: string) => {
     return "";
   }
 
-  const firstGroup = digits.slice(0, 1);
-  const middleGroup = digits.slice(1, 5);
-  const lastGroup = digits.slice(5, 9);
+  // Limitar a 9 dígitos
+  const cleanDigits = digits.slice(0, 9);
+
+  const firstGroup = cleanDigits.slice(0, 1);
+  const middleGroup = cleanDigits.slice(1, 5);
+  const lastGroup = cleanDigits.slice(5, 9);
 
   let formatted = `+56 ${firstGroup}`;
 
@@ -228,9 +231,10 @@ export function JobApplicationForm({ onCancel }: JobApplicationFormProps) {
   };
 
   const handlePhoneChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setValue("telefono", formatPhone(event.target.value), {
+    const formatted = formatPhone(event.target.value);
+    setValue("telefono", formatted, {
       shouldDirty: true,
-      shouldValidate: true,
+      shouldValidate: false,
     });
   };
 

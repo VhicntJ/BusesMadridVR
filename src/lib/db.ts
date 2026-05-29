@@ -21,6 +21,8 @@ export function getDbPool(): Pool {
   const user = getRequiredEnv("DB_USER");
   const password = getRequiredEnv("DB_PASSWORD");
 
+  console.log(`🔌 Creating database pool: ${user}@${host}:${port}/${database}`);
+
   pool = mysql.createPool({
     host,
     port,
@@ -32,6 +34,7 @@ export function getDbPool(): Pool {
     queueLimit: 0,
     timezone: "Z",
     charset: "utf8mb4",
+    connectTimeout: 10000, // 10 seconds
   });
 
   return pool;
