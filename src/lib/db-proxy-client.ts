@@ -56,7 +56,7 @@ class DbProxyClient {
     }
   }
 
-  private async request<T>(action: string, data: Record<string, unknown>): Promise<T> {
+  private async request<T>(action: string, data: JobApplicationData | ContactData): Promise<T> {
     try {
       console.log(`🔄 DB Proxy request: ${action}`);
 
