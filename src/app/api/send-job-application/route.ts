@@ -202,25 +202,25 @@ export async function POST(request: Request) {
       cvStoragePath: storedPath,
     });
 
-    // 9. Enviar correo de confirmación al postulante
-    console.log("📨 Sending confirmation email to applicant...");
+    // 9. Enviar correo de confirmación al postulante vía proxy
+    console.log("📨 Sending confirmation email to applicant via proxy...");
     const safeCargo = validatedData.cargo.replace(/[\r\n]+/g, " ").trim();
 
-    await sendEmail({
+    await dbProxy.sendEmail({
       to: validatedData.correo,
       subject: "Tu postulación ha sido recibida - Buses Madrid",
       html: userConfirmationHtml,
     });
     console.log(`✅ Confirmation email sent to ${validatedData.correo}`);
 
-    // 10. Enviar correo al equipo de RRHH
-    console.log("📨 Sending notification email to HR...");
+    // 10. Enviar correo al equipo de RRHH vía proxy
+    console.log("📨 Sending notification email to HR via proxy...");
     const emailTo = process.env.EMAIL_JOBS_TO;
     if (!emailTo) {
       throw new Error("EMAIL_JOBS_TO not configured");
     }
 
-    await sendEmail({
+    await dbProxy.sendEmail({
       to: emailTo,
       subject: `Nueva postulación: ${validatedData.nombres} ${validatedData.apellidos} - ${safeCargo}`,
       html: adminEmailHtml,

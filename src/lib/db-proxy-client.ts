@@ -106,6 +106,13 @@ class DbProxyClient {
   async insertContact(data: ContactData): Promise<{ contactId: number }> {
     return this.request<{ contactId: number }>('insert_contact', data);
   }
+
+  /**
+   * Enviar email a través del proxy
+   */
+  async sendEmail(data: { to: string; subject: string; html: string; replyTo?: string }): Promise<{ sent: boolean }> {
+    return this.request<{ sent: boolean }>('send_email', data as unknown as JobApplicationData | ContactData);
+  }
 }
 
 // Singleton para reutilizar la instancia
