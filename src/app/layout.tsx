@@ -44,6 +44,15 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/images/fotos/busesmadrid.ico", sizes: "any" },
+    ],
+    apple: [
+      { url: "/images/fotos/busesmadrid.ico" },
+    ],
+  },
   robots: {
     index: true,
     follow: true,
