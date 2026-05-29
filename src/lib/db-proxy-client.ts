@@ -5,7 +5,7 @@
  * Permite ejecutar operaciones de base de datos a través de un endpoint seguro
  */
 
-interface ProxyResponse<T = any> {
+interface ProxyResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
@@ -56,7 +56,7 @@ class DbProxyClient {
     }
   }
 
-  private async request<T>(action: string, data: any): Promise<T> {
+  private async request<T>(action: string, data: Record<string, unknown>): Promise<T> {
     try {
       console.log(`🔄 DB Proxy request: ${action}`);
 
