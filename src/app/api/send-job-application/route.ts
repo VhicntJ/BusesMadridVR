@@ -152,7 +152,7 @@ export async function POST(request: Request) {
 
     // Subir a Vercel Blob
     const blob = await put(blobFileName, curriculum, {
-      access: "public", // Cambiar a "private" si solo admins deben verlo
+      access: "private", // El store está configurado como privado
       addRandomSuffix: false,
       contentType: curriculum.type,
     });
