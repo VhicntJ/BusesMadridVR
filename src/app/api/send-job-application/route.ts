@@ -201,31 +201,31 @@ export async function POST(request: Request) {
       cvStoragePath: storedPath,
     });
 
-    // 9. Enviar correo de confirmación al postulante vía proxy
-    console.log("📨 Sending confirmation email to applicant via proxy...");
-    const safeCargo = validatedData.cargo.replace(/[\r\n]+/g, " ").trim();
+    // 9. Emails temporalmente desactivados (ModSecurity bloquea)
+    // TODO: Configurar emails después de resolver ModSecurity con hosting
+    console.log("⚠️ Email sending temporarily disabled due to ModSecurity restrictions");
+    console.log("📧 Applicant email would be sent to:", validatedData.correo);
+    console.log("📧 Admin notification would be sent to:", process.env.EMAIL_JOBS_TO);
 
+    // DESCOMENTAR CUANDO SE RESUELVA MODSECURITY:
+    /*
+    const safeCargo = validatedData.cargo.replace(/[\r\n]+/g, " ").trim();
     await dbProxy.sendEmail({
       to: validatedData.correo,
       subject: "Tu postulación ha sido recibida - Buses Madrid",
       html: userConfirmationHtml,
     });
-    console.log(`✅ Confirmation email sent to ${validatedData.correo}`);
 
-    // 10. Enviar correo al equipo de RRHH vía proxy
-    console.log("📨 Sending notification email to HR via proxy...");
     const emailTo = process.env.EMAIL_JOBS_TO;
-    if (!emailTo) {
-      throw new Error("EMAIL_JOBS_TO not configured");
+    if (emailTo) {
+      await dbProxy.sendEmail({
+        to: emailTo,
+        subject: `Nueva postulación: ${validatedData.nombres} ${validatedData.apellidos} - ${safeCargo}`,
+        html: adminEmailHtml,
+        replyTo: validatedData.correo,
+      });
     }
-
-    await dbProxy.sendEmail({
-      to: emailTo,
-      subject: `Nueva postulación: ${validatedData.nombres} ${validatedData.apellidos} - ${safeCargo}`,
-      html: adminEmailHtml,
-      replyTo: validatedData.correo,
-    });
-    console.log(`✅ Notification email sent to ${emailTo}`);
+    */
 
     console.log("🎉 Job application submitted successfully!");
     return successResponse(
