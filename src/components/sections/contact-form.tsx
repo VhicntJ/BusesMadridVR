@@ -1,14 +1,13 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MessageCircleMore, SendHorizontal } from "lucide-react";
-import Link from "next/link";
+import { SendHorizontal } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { z } from "zod";
 
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,

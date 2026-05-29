@@ -2,7 +2,6 @@
 
 import { useEffect, lazy, Suspense } from "react";
 import { Briefcase, X } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 // Lazy load del formulario pesado
 const JobApplicationForm = lazy(() =>
