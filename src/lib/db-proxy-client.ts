@@ -66,6 +66,8 @@ class DbProxyClient {
   private async request<T>(action: string, data: JobApplicationData | ContactData | EmailData): Promise<T> {
     try {
       console.log(`🔄 DB Proxy request: ${action}`);
+      console.log(`🔗 Proxy URL: ${this.apiUrl}`);
+      console.log(`🔑 API Key length: ${this.apiKey.length} chars`);
 
       const response = await fetch(this.apiUrl, {
         method: 'POST',
