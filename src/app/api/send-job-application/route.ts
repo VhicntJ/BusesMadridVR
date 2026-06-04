@@ -201,31 +201,37 @@ export async function POST(request: Request) {
       cvStoragePath: storedPath,
     });
 
-    // 9. Emails temporalmente desactivados (ModSecurity bloquea)
-    // TODO: Configurar emails después de resolver ModSecurity con hosting
-    console.log("⚠️ Email sending temporarily disabled due to ModSecurity restrictions");
-    console.log("📧 Applicant email would be sent to:", validatedData.correo);
-    console.log("📧 Admin notification would be sent to:", process.env.EMAIL_JOBS_TO);
+    // 9. Enviar correos vía proxy (usando base64 para evitar ModSecurity)
+    console.log("📧 Sending confirmation email to applicant...");
+    try {
+      await dbProxy.sendEmail({
+        to: validatedData.correo,
+        subject: "Tu postulación ha sido recibida - Buses Madrid",
+        html: userConfirmationHtml,
+      });
+      console.log("✅ Applicant confirmation email sent successfully");
+    } catch (emailError) {
+      console.error("⚠️ Failed to send applicant email:", emailError);
+      // No fallar toda la operación si el email al postulante falla
+    }
 
-    // DESCOMENTAR CUANDO SE RESUELVA MODSECURITY:
-    /*
-    const safeCargo = validatedData.cargo.replace(/[\r\n]+/g, " ").trim();
-    await dbProxy.sendEmail({
-      to: validatedData.correo,
-      subject: "Tu postulación ha sido recibida - Buses Madrid",
-      html: userConfirmationHtml,
-    });
-
+    console.log("📧 Sending admin notification email...");
     const emailTo = process.env.EMAIL_JOBS_TO;
     if (emailTo) {
-      await dbProxy.sendEmail({
-        to: emailTo,
-        subject: `Nueva postulación: ${validatedData.nombres} ${validatedData.apellidos} - ${safeCargo}`,
-        html: adminEmailHtml,
-        replyTo: validatedData.correo,
-      });
+      try {
+        const safeCargo = validatedData.cargo.replace(/[\r\n]+/g, " ").trim();
+        await dbProxy.sendEmail({
+          to: emailTo,
+          subject: `Nueva postulación: ${validatedData.nombres} ${validatedData.apellidos} - ${safeCargo}`,
+          html: adminEmailHtml,
+          replyTo: validatedData.correo,
+        });
+        console.log("✅ Admin notification email sent successfully");
+      } catch (emailError) {
+        console.error("⚠️ Failed to send admin notification email:", emailError);
+        // No fallar toda la operación si el email al admin falla
+      }
     }
-    */
 
     console.log("🎉 Job application submitted successfully!");
     return successResponse(

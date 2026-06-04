@@ -87,3 +87,6 @@ seed-data.json
 # Proxy PHP (no subir, contiene credenciales)
 public_html_proxy/
 DB_PROXY_SETUP.md
+db-proxy.php
+EMAIL_SETUP.md
+TESTING.md
