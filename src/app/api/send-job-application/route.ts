@@ -7,6 +7,7 @@ import { verifyRecaptcha } from "@/lib/recaptcha-service";
 import {
   generateJobApplicationEmailHTML,
   generateJobApplicationAdminEmailHTML,
+  sendEmail,
 } from "@/lib/email-service";
 import { jobApplicationSchema } from "@/lib/validation-schemas";
 import { getDbProxyClient } from "@/lib/db-proxy-client";
@@ -201,10 +202,10 @@ export async function POST(request: Request) {
       cvStoragePath: storedPath,
     });
 
-    // 9. Enviar correos vía proxy (usando base64 para evitar ModSecurity)
+    // 9. Enviar correos directamente desde Vercel usando nodemailer
     console.log("📧 Sending confirmation email to applicant...");
     try {
-      await dbProxy.sendEmail({
+      await sendEmail({
         to: validatedData.correo,
         subject: "Tu postulación ha sido recibida - Buses Madrid",
         html: userConfirmationHtml,
@@ -220,7 +221,7 @@ export async function POST(request: Request) {
     if (emailTo) {
       try {
         const safeCargo = validatedData.cargo.replace(/[\r\n]+/g, " ").trim();
-        await dbProxy.sendEmail({
+        await sendEmail({
           to: emailTo,
           subject: `Nueva postulación: ${validatedData.nombres} ${validatedData.apellidos} - ${safeCargo}`,
           html: adminEmailHtml,
