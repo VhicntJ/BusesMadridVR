@@ -88,10 +88,9 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
       },
     });
 
-    console.log("Email sent successfully:", info.messageId);
     return true;
   } catch (error) {
-    console.error("Error sending email:", error);
+    console.error("Email error:", error);
     throw error;
   }
 }

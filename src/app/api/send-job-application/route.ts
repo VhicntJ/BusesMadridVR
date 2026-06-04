@@ -22,8 +22,6 @@ const allowedCvExtensions = new Set([".pdf", ".doc", ".docx"]);
 export async function POST(request: Request) {
   let storedPath: string | null = null;
   try {
-    console.log("📥 Job application request received");
-
     // 0. Verificar variables de entorno críticas
     const requiredEnvVars = [
       "RECAPTCHA_SECRET_KEY",
@@ -51,20 +49,15 @@ export async function POST(request: Request) {
       allowedContentTypes: ["multipart/form-data"],
     });
     if (!validation.valid) {
-      console.error("❌ Validation failed:", validation.error);
       return errorResponse(validation.error || "Invalid request", 400);
     }
 
-    console.log("✅ Request validation passed");
-
     // 2. Parsear body (multipart)
-    console.log("📝 Parsing form data...");
     const formData = await request.formData();
     const getField = (name: string) => {
       const value = formData.get(name);
       return typeof value === "string" ? value : "";
     };
-    console.log("✅ Form data parsed");
 
     const data = {
       nombres: getField("nombres"),
@@ -84,25 +77,19 @@ export async function POST(request: Request) {
     };
 
     // 3. Validar schema de Zod
-    console.log("🔍 Validating form data with schema...");
     const validationResult = jobApplicationSchema.safeParse(data);
     if (!validationResult.success) {
-      console.error("❌ Schema validation failed:", validationResult.error.flatten());
       return errorResponse("Invalid form data", 400, validationResult.error.flatten());
     }
 
     const validatedData = validationResult.data;
     const ipAddress = getClientIp(request);
-    console.log("✅ Schema validation passed");
 
     // 4. Verificar currículum
-    console.log("📄 Checking curriculum file...");
     const curriculum = formData.get("curriculum");
     if (!(curriculum instanceof File)) {
-      console.error("❌ Curriculum file not found or invalid");
       return errorResponse("El currículum es obligatorio", 400);
     }
-    console.log(`✅ Curriculum file found: ${curriculum.name} (${curriculum.size} bytes)`);
 
     const maxSizeMb = parseInt(process.env.CV_MAX_SIZE_MB || "2", 10);
     const maxSizeBytes = maxSizeMb * 1024 * 1024;
@@ -128,19 +115,12 @@ export async function POST(request: Request) {
     }
 
     // 5. Verificar reCAPTCHA
-    console.log("🔐 Verifying reCAPTCHA...");
     const recaptchaCheck = await verifyRecaptcha(validatedData.recaptchaToken, "job_application");
     if (!recaptchaCheck.success) {
-      console.error("❌ reCAPTCHA verification failed:", recaptchaCheck.error);
       return errorResponse("reCAPTCHA verification failed", 400);
     }
 
-    console.log(
-      `✅ Job application from ${validatedData.nombres} ${validatedData.apellidos} for position ${validatedData.cargo} (reCAPTCHA score: ${recaptchaCheck.score})`
-    );
-
     // 6. Guardar currículum en Vercel Blob Storage
-    console.log("☁️ Uploading curriculum to Vercel Blob...");
     const timestamp = Date.now();
     const normalizedExtension = allowedCvExtensions.has(extension)
       ? extension
@@ -148,18 +128,16 @@ export async function POST(request: Request) {
 
     const blobFileName = `cv/${validatedData.rut.replace(/\./g, '')}_${timestamp}${normalizedExtension}`;
 
-    // Subir a Vercel Blob
+    // Subir a Vercel Blob con acceso público (CVs deben ser accesibles para RRHH)
     const blob = await put(blobFileName, curriculum, {
-      access: "private", // El store está configurado como privado
+      access: "public", // Acceso público con URL difícil de adivinar
       addRandomSuffix: false,
       contentType: curriculum.type,
     });
 
-    storedPath = blob.url; // URL de Vercel Blob para guardar en BD
-    console.log(`✅ Curriculum uploaded to: ${storedPath}`);
+    storedPath = blob.url; // URL pública permanente
 
     // 7. Guardar datos en base de datos vía proxy
-    console.log("💾 Saving to database via proxy...");
     const dbProxy = getDbProxyClient();
 
     const dbResult = await dbProxy.insertJobApplication({
@@ -185,10 +163,8 @@ export async function POST(request: Request) {
     });
 
     const postulacionId = dbResult.postulacionId;
-    console.log(`✅ Database save successful. Postulacion ID: ${postulacionId}`);
 
     // 8. Generar HTMLs de correos
-    console.log("📧 Generating email HTML...");
     const userConfirmationHtml = generateJobApplicationEmailHTML({
       nombres: validatedData.nombres,
       apellidos: validatedData.apellidos,
@@ -199,24 +175,21 @@ export async function POST(request: Request) {
     const adminEmailHtml = generateJobApplicationAdminEmailHTML({
       ...validatedData,
       cvFileName: safeOriginalName,
-      cvStoragePath: storedPath,
+      cvStoragePath: storedPath, // URL pública permanente
     });
 
     // 9. Enviar correos directamente desde Vercel usando nodemailer
-    console.log("📧 Sending confirmation email to applicant...");
     try {
       await sendEmail({
         to: validatedData.correo,
         subject: "Tu postulación ha sido recibida - Buses Madrid",
         html: userConfirmationHtml,
       });
-      console.log("✅ Applicant confirmation email sent successfully");
     } catch (emailError) {
-      console.error("⚠️ Failed to send applicant email:", emailError);
       // No fallar toda la operación si el email al postulante falla
+      console.error("Failed to send applicant email:", emailError);
     }
 
-    console.log("📧 Sending admin notification email...");
     const emailTo = process.env.EMAIL_JOBS_TO;
     if (emailTo) {
       try {
@@ -227,30 +200,18 @@ export async function POST(request: Request) {
           html: adminEmailHtml,
           replyTo: validatedData.correo,
         });
-        console.log("✅ Admin notification email sent successfully");
       } catch (emailError) {
-        console.error("⚠️ Failed to send admin notification email:", emailError);
         // No fallar toda la operación si el email al admin falla
+        console.error("Failed to send admin email:", emailError);
       }
     }
 
-    console.log("🎉 Job application submitted successfully!");
     return successResponse(
       { postulacionId, cvFileName: safeOriginalName },
       "Application submitted successfully"
     );
   } catch (error) {
-    // En Vercel Blob, no necesitamos limpiar archivos manualmente en caso de error
-    // Los archivos no usados se pueden limpiar después con un cron job si es necesario
-    console.error("❌❌❌ FATAL ERROR in job application route:", error);
-
-    // Log detallado del error
-    if (error instanceof Error) {
-      console.error("Error name:", error.name);
-      console.error("Error message:", error.message);
-      console.error("Error stack:", error.stack);
-    }
-
+    console.error("Job application error:", error);
     return errorResponse("Internal server error", 500);
   }
 }

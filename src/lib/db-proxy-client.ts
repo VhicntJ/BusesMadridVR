@@ -65,10 +65,6 @@ class DbProxyClient {
 
   private async request<T>(action: string, data: JobApplicationData | ContactData | EmailData): Promise<T> {
     try {
-      console.log(`🔄 DB Proxy request: ${action}`);
-      console.log(`🔗 Proxy URL: ${this.apiUrl}`);
-      console.log(`🔑 API Key length: ${this.apiKey.length} chars`);
-
       const response = await fetch(this.apiUrl, {
         method: 'POST',
         headers: {
@@ -94,10 +90,9 @@ class DbProxyClient {
         throw new Error(result.error || result.message || 'Unknown error from proxy');
       }
 
-      console.log(`✅ DB Proxy success: ${action}`);
       return result.data as T;
     } catch (error) {
-      console.error(`❌ DB Proxy error (${action}):`, error);
+      console.error(`DB Proxy error (${action}):`, error);
       throw error;
     }
   }
