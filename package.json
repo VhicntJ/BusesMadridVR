@@ -24,7 +24,7 @@
     "framer-motion": "^12.38.0",
     "jose": "^6.2.3",
     "lucide-react": "^1.8.0",
-    "mysql2": "^3.11.5",
+    "mysql2": "^3.23.1",
     "next": "^15.5.15",
     "nodemailer": "^8.0.9",
     "rate-limiter-flexible": "^3.0.6",
