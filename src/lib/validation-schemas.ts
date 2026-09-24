@@ -42,3 +42,51 @@ export const jobApplicationSchema = z.object({
 });
 
 export type JobApplicationData = z.infer<typeof jobApplicationSchema>;
+
+/**
+ * Schema para validación de denuncia
+ */
+export const complaintFormSchema = z.object({
+  tipoDenuncia: z.string().min(1, "Seleccione un tipo de denuncia"),
+  tipoEnvio: z.enum(["anonimo", "con_datos"]),
+  nombre: z.string().optional(),
+  rut: z.string().optional(),
+  celular: z.string().optional(),
+  correo: z.string().email("Ingrese un correo válido").optional().or(z.literal("")),
+  lugar: z.string().min(5, "El lugar de la infracción es requerido"),
+  detalle: z.string().min(20, "Ingrese más detalles de la denuncia").max(6000),
+  archivo: z.any().optional(),
+}).superRefine((data, ctx) => {
+  if (data.tipoEnvio === "con_datos") {
+    if (!data.nombre || data.nombre.length < 2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "El nombre es requerido",
+        path: ["nombre"],
+      });
+    }
+    if (!data.rut || data.rut.length < 8) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "El RUT es requerido",
+        path: ["rut"],
+      });
+    }
+    if (!data.celular || data.celular.length < 8) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "El celular es requerido",
+        path: ["celular"],
+      });
+    }
+    if (!data.correo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.correo)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Ingrese un correo electrónico válido",
+        path: ["correo"],
+      });
+    }
+  }
+});
+
+export type ComplaintFormData = z.infer<typeof complaintFormSchema>;

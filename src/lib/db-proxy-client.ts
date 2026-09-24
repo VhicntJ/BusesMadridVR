@@ -43,6 +43,22 @@ interface ContactData {
   ip_origen?: string;
 }
 
+interface ComplaintData {
+  tipo: string;
+  descripcion: string;
+  lugar?: string;
+  es_anonima?: number;
+  nombre?: string;
+  correo?: string;
+  celular?: string;
+  rut?: string;
+  tipoEnvio?: string;
+  ip_origen?: string;
+  archivo_url?: string;
+  archivo_nombre?: string;
+  archivo_mime?: string;
+}
+
 interface EmailData {
   to: string;
   subject: string;
@@ -63,7 +79,7 @@ class DbProxyClient {
     }
   }
 
-  private async request<T>(action: string, data: JobApplicationData | ContactData | EmailData): Promise<T> {
+  private async request<T>(action: string, data: JobApplicationData | ContactData | ComplaintData | EmailData): Promise<T> {
     try {
       const response = await fetch(this.apiUrl, {
         method: 'POST',
@@ -112,6 +128,13 @@ class DbProxyClient {
   }
 
   /**
+   * Insertar denuncia ética
+   */
+  async insertComplaint(data: ComplaintData): Promise<{ denunciaId: number; codigo: string }> {
+    return this.request<{ denunciaId: number; codigo: string }>('insert_complaint', data);
+  }
+
+  /**
    * Enviar email a través del proxy
    */
   async sendEmail(data: EmailData): Promise<{ sent: boolean }> {
@@ -137,4 +160,4 @@ export function getDbProxyClient(): DbProxyClient {
   return dbProxyClient;
 }
 
-export type { JobApplicationData, ContactData, EmailData };
+export type { JobApplicationData, ContactData, ComplaintData, EmailData };

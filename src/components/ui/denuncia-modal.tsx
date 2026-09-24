@@ -92,15 +92,41 @@ export function DenunciaModal({ isOpen, onClose }: DenunciaModalProps) {
 
   const tipoEnvio = watch("tipoEnvio");
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onSubmit = async (_data: FormData) => {
-    // Simulated API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    const generatedCode = "BM-" + Math.floor(1000 + Math.random() * 9000);
-    const generatedPassword = Math.random().toString(36).slice(-6).toUpperCase();
+  const onSubmit = async (data: FormData) => {
+    try {
+      const payload = new FormData();
+      payload.append("tipoDenuncia", data.tipoDenuncia);
+      payload.append("tipoEnvio", data.tipoEnvio);
+      payload.append("nombre", data.nombre ?? "");
+      payload.append("rut", data.rut ?? "");
+      payload.append("celular", data.celular ?? "");
+      payload.append("correo", data.correo ?? "");
+      payload.append("lugar", data.lugar);
+      payload.append("detalle", data.detalle);
 
-    setTrackingData({ code: generatedCode, password: generatedPassword });
-    setSuccess(true);
+      if (data.archivo instanceof File) {
+        payload.append("archivo", data.archivo);
+      }
+
+      const response = await fetch("/api/send-complaint-email", {
+        method: "POST",
+        body: payload,
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result?.error || "Error al enviar la denuncia");
+      }
+
+      const generatedPassword = Math.random().toString(36).slice(-6).toUpperCase();
+      const generatedCode = result?.data?.codigo || "BM-" + Math.floor(1000 + Math.random() * 9000);
+
+      setTrackingData({ code: generatedCode, password: generatedPassword });
+      setSuccess(true);
+    } catch (error) {
+      console.error("Complaint submission error:", error);
+      alert(error instanceof Error ? error.message : "Error al enviar la denuncia");
+    }
   };
 
   const handleSearch = async (e: React.FormEvent) => {
