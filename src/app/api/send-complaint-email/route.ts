@@ -40,7 +40,6 @@ export async function POST(request: Request) {
 
   try {
     const requiredEnvVars = [
-      "BLOB_READ_WRITE_TOKEN",
       "DB_PROXY_URL",
       "DB_PROXY_API_KEY",
       "SMTP_HOST",
@@ -91,6 +90,10 @@ export async function POST(request: Request) {
 
     const archivo = formData.get("archivo");
     if (archivo instanceof File && archivo.size > 0) {
+      if (!process.env.BLOB_READ_WRITE_TOKEN) {
+        return errorResponse("BLOB_READ_WRITE_TOKEN not configured", 500);
+      }
+
       const maxSizeMb = parseInt(process.env.COMPLAINT_MAX_SIZE_MB || "5", 10);
       const maxSizeBytes = maxSizeMb * 1024 * 1024;
 
@@ -188,7 +191,8 @@ export async function POST(request: Request) {
       "Complaint submitted successfully"
     );
   } catch (error) {
-    console.error("Complaint submission error:", error);
-    return errorResponse("Internal server error", 500);
+    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("Complaint submission error:", message);
+    return errorResponse(message, 500);
   }
 }

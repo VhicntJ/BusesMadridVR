@@ -75,7 +75,7 @@ class DbProxyClient {
     this.apiKey = process.env.DB_PROXY_API_KEY || '';
 
     if (!this.apiKey) {
-      throw new Error('DB_PROXY_API_KEY not configured');
+      throw new Error('DB_PROXY_API_KEY not configured in Vercel environment');
     }
   }
 
