@@ -125,7 +125,7 @@ export async function POST(request: Request) {
         : mimeToExtension[archivo.type] || ".pdf";
 
       const blob = await put(`images-denuncias/${Date.now()}_${safeOriginalName.replace(/\.[^.]+$/, "")}${normalizedExtension}`, archivo, {
-        access: "public",
+        access: "private",
         addRandomSuffix: false,
         contentType: archivo.type || "application/octet-stream",
       });
