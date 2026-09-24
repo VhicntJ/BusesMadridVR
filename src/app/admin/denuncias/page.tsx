@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   Search,
@@ -20,28 +20,22 @@ type Priority = "Alta" | "Media" | "Baja";
 
 type Denuncia = {
   id: string;
-  type: string;
+  codigo: string;
+  tipo: string;
+  tipoLabel: string;
   submitter: "Anónimo" | "Identificado";
   date: string;
   status: Status;
   priority: Priority;
   analyst?: string;
+  descripcion?: string;
+  denuncianteNombre?: string;
+  denuncianteEmail?: string;
+  denuncianteTelefono?: string;
+  areaInvolucrada?: string;
+  estado?: string;
+  prioridad?: string;
 };
-
-const mockDenuncias: Denuncia[] = [
-  { id: "BM-4912", type: "Infracción a Ley 20.393", submitter: "Anónimo", date: "16 Abr 2026", status: "Nueva", priority: "Alta" },
-  { id: "BM-4809", type: "Acoso Laboral", submitter: "Identificado", date: "15 Abr 2026", status: "En Revisión", priority: "Media", analyst: "Carlos M." },
-  { id: "BM-4790", type: "Robo, Hurto o Fraude", submitter: "Anónimo", date: "12 Abr 2026", status: "En Revisión", priority: "Alta", analyst: "Ana P." },
-  { id: "BM-4655", type: "Conflicto de Interés", submitter: "Identificado", date: "10 Abr 2026", status: "Cerrada", priority: "Baja", analyst: "Carlos M." },
-  { id: "BM-4621", type: "Otro Incumplimiento", submitter: "Anónimo", date: "05 Abr 2026", status: "Cerrada", priority: "Media" },
-  { id: "BM-4588", type: "Discriminación o Trato Injusto", submitter: "Identificado", date: "03 Abr 2026", status: "En Revisión", priority: "Alta", analyst: "Ana P." },
-  { id: "BM-4540", type: "Acoso Sexual", submitter: "Anónimo", date: "29 Mar 2026", status: "Nueva", priority: "Alta" },
-  { id: "BM-4501", type: "Negligencia o Desidia", submitter: "Identificado", date: "25 Mar 2026", status: "Cerrada", priority: "Baja", analyst: "Carlos M." },
-  { id: "BM-4480", type: "Infracción a Ley 20.393", submitter: "Anónimo", date: "20 Mar 2026", status: "Archivada", priority: "Media" },
-  { id: "BM-4401", type: "Robo, Hurto o Fraude", submitter: "Identificado", date: "15 Mar 2026", status: "Cerrada", priority: "Alta", analyst: "Ana P." },
-  { id: "BM-4380", type: "Conflicto de Interés", submitter: "Anónimo", date: "10 Mar 2026", status: "Cerrada", priority: "Media" },
-  { id: "BM-4350", type: "Otro Incumplimiento", submitter: "Anónimo", date: "05 Mar 2026", status: "Archivada", priority: "Baja" },
-];
 
 const STATUS_CONFIG: Record<Status, { row: string; badge: string; dot: string }> = {
   Nueva: {
@@ -81,33 +75,88 @@ export default function DenunciasPage() {
   const [priorityFilter, setPriorityFilter] = useState<Priority | "Todas">("Todas");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<string | null>(null);
+  const [denuncias, setDenuncias] = useState<Denuncia[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadDenuncias() {
+      try {
+        const response = await fetch("/api/admin/denuncias", { cache: "no-store" });
+        if (!response.ok) throw new Error("Error cargando denuncias");
+        const data = await response.json();
+
+        const mapped: Denuncia[] = (data.items || []).map((item: any) => {
+          const statusMap: Record<string, Status> = {
+            nueva: "Nueva",
+            en_revision: "En Revisión",
+            cerrada: "Cerrada",
+            archivada: "Archivada",
+          };
+          const priorityMap: Record<string, Priority> = {
+            alta: "Alta",
+            media: "Media",
+            baja: "Baja",
+          };
+
+          return {
+            id: String(item.codigo || item.id),
+            codigo: item.codigo,
+            tipo: item.tipo,
+            tipoLabel: item.tipo,
+            submitter: item.esAnonima ? "Anónimo" : "Identificado",
+            date: new Date(item.creadoEn).toLocaleDateString("es-ES", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            }),
+            status: statusMap[item.estado] || "Nueva",
+            priority: priorityMap[item.prioridad] || "Media",
+            analyst: item.analistaNombre || undefined,
+            descripcion: item.descripcion,
+            denuncianteNombre: item.denuncianteNombre,
+            denuncianteEmail: item.denuncianteEmail,
+            denuncianteTelefono: item.denuncianteTelefono,
+            areaInvolucrada: item.areaInvolucrada,
+          };
+        });
+
+        setDenuncias(mapped);
+      } catch (error) {
+        console.error("Error fetching denuncias:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadDenuncias();
+  }, []);
 
   const counts = useMemo(
     () => ({
-      Todas: mockDenuncias.length,
-      Nueva: mockDenuncias.filter((d) => d.status === "Nueva").length,
-      "En Revisión": mockDenuncias.filter((d) => d.status === "En Revisión").length,
-      Cerrada: mockDenuncias.filter((d) => d.status === "Cerrada").length,
-      Archivada: mockDenuncias.filter((d) => d.status === "Archivada").length,
+      Todas: denuncias.length,
+      Nueva: denuncias.filter((d) => d.status === "Nueva").length,
+      "En Revisión": denuncias.filter((d) => d.status === "En Revisión").length,
+      Cerrada: denuncias.filter((d) => d.status === "Cerrada").length,
+      Archivada: denuncias.filter((d) => d.status === "Archivada").length,
     }),
-    []
+    [denuncias]
   );
 
   const filtered = useMemo(() => {
-    return mockDenuncias.filter((d) => {
+    return denuncias.filter((d) => {
       const matchSearch =
         d.id.toLowerCase().includes(search.toLowerCase()) ||
-        d.type.toLowerCase().includes(search.toLowerCase());
+        d.tipo.toLowerCase().includes(search.toLowerCase());
       const matchStatus = statusFilter === "Todas" || d.status === statusFilter;
       const matchPriority = priorityFilter === "Todas" || d.priority === priorityFilter;
       return matchSearch && matchStatus && matchPriority;
     });
-  }, [search, statusFilter, priorityFilter]);
+  }, [denuncias, search, statusFilter, priorityFilter]);
 
   const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
 
-  const selectedItem = mockDenuncias.find((d) => d.id === selected) ?? null;
+  const selectedItem = denuncias.find((d) => d.id === selected) ?? null;
 
   const handleTabChange = (tab: Status | "Todas") => {
     setStatusFilter(tab);
@@ -220,6 +269,9 @@ export default function DenunciasPage() {
         </div>
 
         {/* Table */}
+        {loading ? (
+          <div className="px-6 py-16 text-center text-slate-500">Cargando denuncias...</div>
+        ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
@@ -249,7 +301,7 @@ export default function DenunciasPage() {
                     >
                       <td className="px-6 py-4 font-bold text-slate-700">{item.id}</td>
                       <td className="px-6 py-4 font-medium text-slate-600 max-w-[200px] truncate">
-                        {item.type}
+                        {item.tipo}
                       </td>
                       <td className="px-6 py-4">
                         <span
@@ -307,6 +359,7 @@ export default function DenunciasPage() {
             </tbody>
           </table>
         </div>
+        )}
 
         {/* Pagination */}
         {totalPages > 1 && (
@@ -372,11 +425,20 @@ export default function DenunciasPage() {
             </button>
           </div>
           <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <InfoField label="Tipo de infracción" value={selectedItem.type} />
+            <InfoField label="Tipo de infracción" value={selectedItem.tipoLabel || selectedItem.tipo || "No informado"} />
             <InfoField label="Denunciante" value={selectedItem.submitter} />
             <InfoField label="Prioridad" value={selectedItem.priority} />
             <InfoField label="Fecha de ingreso" value={selectedItem.date} />
             <InfoField label="Analista asignado" value={selectedItem.analyst ?? "Sin asignar"} />
+            <InfoField label="Área involucrada" value={selectedItem.areaInvolucrada || "No especificada"} />
+            <InfoField label="Correo" value={selectedItem.denuncianteEmail || "No informado"} />
+            <InfoField label="Teléfono" value={selectedItem.denuncianteTelefono || "No informado"} />
+          </div>
+          <div className="px-6 pb-6">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Descripción</p>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 whitespace-pre-wrap">
+              {selectedItem.descripcion || "Sin descripción registrada."}
+            </div>
           </div>
           <div className="px-6 pb-6 flex gap-3">
             <button className="px-4 py-2 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800 transition-colors flex items-center gap-2">
