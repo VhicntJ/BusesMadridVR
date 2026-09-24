@@ -37,7 +37,7 @@ export async function GET(
       return NextResponse.json({ error: "Denuncia no encontrada" }, { status: 404 });
     }
 
-    const denuncia = denunciaRows[0] as any;
+    const denuncia = denunciaRows[0] as Record<string, unknown>;
 
     const [archivoRows] = await pool.query(
       `

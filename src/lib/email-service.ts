@@ -72,7 +72,7 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
 
     const transporter = getTransporter();
 
-    const info = await transporter.sendMail({
+    await transporter.sendMail({
       from: `"${fromName}" <${emailFrom}>`,
       to: options.to,
       subject: options.subject,

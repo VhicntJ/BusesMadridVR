@@ -85,7 +85,7 @@ export default function DenunciasPage() {
         if (!response.ok) throw new Error("Error cargando denuncias");
         const data = await response.json();
 
-        const mapped: Denuncia[] = (data.items || []).map((item: any) => {
+        const mapped: Denuncia[] = (data.items || []).map((item: Record<string, unknown>) => {
           const statusMap: Record<string, Status> = {
             nueva: "Nueva",
             en_revision: "En Revisión",
@@ -98,25 +98,33 @@ export default function DenunciasPage() {
             baja: "Baja",
           };
 
+          const codigo = String(item.codigo ?? item.id ?? "");
+          const tipo = typeof item.tipo === "string" ? item.tipo : "No informado";
+          const estado = typeof item.estado === "string" ? item.estado : "nueva";
+          const prioridad = typeof item.prioridad === "string" ? item.prioridad : "media";
+          const creadoEn = item.creadoEn;
+
           return {
-            id: String(item.codigo || item.id),
-            codigo: item.codigo,
-            tipo: item.tipo,
-            tipoLabel: item.tipo,
+            id: codigo,
+            codigo,
+            tipo,
+            tipoLabel: tipo,
             submitter: item.esAnonima ? "Anónimo" : "Identificado",
-            date: new Date(item.creadoEn).toLocaleDateString("es-ES", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            }),
-            status: statusMap[item.estado] || "Nueva",
-            priority: priorityMap[item.prioridad] || "Media",
-            analyst: item.analistaNombre || undefined,
-            descripcion: item.descripcion,
-            denuncianteNombre: item.denuncianteNombre,
-            denuncianteEmail: item.denuncianteEmail,
-            denuncianteTelefono: item.denuncianteTelefono,
-            areaInvolucrada: item.areaInvolucrada,
+            date: creadoEn
+              ? new Date(String(creadoEn)).toLocaleDateString("es-ES", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })
+              : "Sin fecha",
+            status: statusMap[estado] || "Nueva",
+            priority: priorityMap[prioridad] || "Media",
+            analyst: typeof item.analistaNombre === "string" ? item.analistaNombre : undefined,
+            descripcion: typeof item.descripcion === "string" ? item.descripcion : undefined,
+            denuncianteNombre: typeof item.denuncianteNombre === "string" ? item.denuncianteNombre : undefined,
+            denuncianteEmail: typeof item.denuncianteEmail === "string" ? item.denuncianteEmail : undefined,
+            denuncianteTelefono: typeof item.denuncianteTelefono === "string" ? item.denuncianteTelefono : undefined,
+            areaInvolucrada: typeof item.areaInvolucrada === "string" ? item.areaInvolucrada : undefined,
           };
         });
 

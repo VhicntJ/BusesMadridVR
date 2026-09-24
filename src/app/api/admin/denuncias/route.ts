@@ -44,23 +44,23 @@ export async function GET() {
     );
 
     const items = Array.isArray(rows)
-      ? rows.map((row: any) => ({
-          id: Number(row.id),
-          codigo: row.codigo,
-          tipo: row.tipo,
-          descripcion: row.descripcion,
+      ? (rows as Array<Record<string, unknown>>).map((row) => ({
+          id: Number(row.id ?? 0),
+          codigo: typeof row.codigo === "string" ? row.codigo : "",
+          tipo: typeof row.tipo === "string" ? row.tipo : "",
+          descripcion: typeof row.descripcion === "string" ? row.descripcion : "",
           esAnonima: Boolean(row.es_anonima),
-          denuncianteNombre: row.denunciante_nombre,
-          denuncianteEmail: row.denunciante_email,
-          denuncianteTelefono: row.denunciante_telefono,
-          areaInvolucrada: row.area_involucrada,
-          estado: row.estado,
-          prioridad: row.prioridad,
-          resolucion: row.resolucion,
-          fechaCierre: row.fecha_cierre,
-          creadoEn: row.creado_en,
-          actualizadoEn: row.actualizado_en,
-          analistaNombre: row.analista_nombre,
+          denuncianteNombre: typeof row.denunciante_nombre === "string" ? row.denunciante_nombre : null,
+          denuncianteEmail: typeof row.denunciante_email === "string" ? row.denunciante_email : null,
+          denuncianteTelefono: typeof row.denunciante_telefono === "string" ? row.denunciante_telefono : null,
+          areaInvolucrada: typeof row.area_involucrada === "string" ? row.area_involucrada : null,
+          estado: typeof row.estado === "string" ? row.estado : null,
+          prioridad: typeof row.prioridad === "string" ? row.prioridad : null,
+          resolucion: typeof row.resolucion === "string" ? row.resolucion : null,
+          fechaCierre: row.fecha_cierre ?? null,
+          creadoEn: row.creado_en ?? null,
+          actualizadoEn: row.actualizado_en ?? null,
+          analistaNombre: typeof row.analista_nombre === "string" ? row.analista_nombre : null,
         }))
       : [];
 
