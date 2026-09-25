@@ -90,3 +90,5 @@ DB_PROXY_SETUP.md
 db-proxy.php
 EMAIL_SETUP.md
 TESTING.md
+
+.playwright-mcp

@@ -121,6 +121,24 @@ export interface AdminFollowupData {
   userAgent?: string;
 }
 
+export interface AdminUserRow {
+  id: number;
+  nombre: string;
+  email: string;
+  rol: string;
+  estado: string;
+  ultimo_acceso: string | null;
+  creado_en: string;
+}
+
+export interface AdminUserInput {
+  nombre?: string;
+  email?: string;
+  password?: string;
+  rol?: string;
+  estado?: string;
+}
+
 class DbProxyClient {
   private apiUrl: string;
   private apiKey: string;
@@ -262,6 +280,20 @@ class DbProxyClient {
       'admin_get_cv',
       { id }
     );
+  }
+
+  async adminListUsers(): Promise<ProxyResult<AdminUserRow[]>> {
+    return this.requestResult<AdminUserRow[]>('admin_list_users', {});
+  }
+
+  async adminCreateUser(data: AdminUserInput & { nombre: string; email: string; password: string }): Promise<
+    ProxyResult<{ id: number }>
+  > {
+    return this.requestResult<{ id: number }>('admin_create_user', data);
+  }
+
+  async adminUpdateUser(id: number, data: AdminUserInput): Promise<ProxyResult<{ updated: boolean }>> {
+    return this.requestResult<{ updated: boolean }>('admin_update_user', { id, ...data });
   }
 
   /**
