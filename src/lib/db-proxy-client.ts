@@ -66,6 +66,17 @@ interface EmailData {
   replyTo?: string;
 }
 
+export interface AdminUser {
+  id: number;
+  nombre: string;
+  email: string;
+  rol: string;
+}
+
+export type AdminLoginResult =
+  | { ok: true; user: AdminUser }
+  | { ok: false; status: number; error: string };
+
 class DbProxyClient {
   private apiUrl: string;
   private apiKey: string;
@@ -132,6 +143,37 @@ class DbProxyClient {
    */
   async insertComplaint(data: ComplaintData): Promise<{ denunciaId: number; codigo: string }> {
     return this.request<{ denunciaId: number; codigo: string }>('insert_complaint', data);
+  }
+
+  /**
+   * Login de administrador vía proxy PHP (el hash bcrypt se verifica en el servidor)
+   */
+  async adminLogin(email: string, password: string): Promise<AdminLoginResult> {
+    try {
+      const response = await fetch(this.apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': this.apiKey,
+        },
+        body: JSON.stringify({ action: 'admin_login', email, password }),
+      });
+
+      const result = (await response.json().catch(() => ({}))) as ProxyResponse<AdminUser>;
+
+      if (!response.ok || !result.success || !result.data) {
+        return {
+          ok: false,
+          status: response.status,
+          error: result.error || 'proxy_error',
+        };
+      }
+
+      return { ok: true, user: result.data };
+    } catch (error) {
+      console.error('DB Proxy error (admin_login):', error);
+      return { ok: false, status: 500, error: 'proxy_unreachable' };
+    }
   }
 
   /**
