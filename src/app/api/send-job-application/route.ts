@@ -128,10 +128,10 @@ export async function POST(request: Request) {
 
     const blobFileName = `cv/${validatedData.rut.replace(/\./g, '')}_${timestamp}${normalizedExtension}`;
 
-    // Subir a Vercel Blob con acceso público (CVs deben ser accesibles para RRHH)
+    // Subir a Vercel Blob con acceso público (URL no adivinable, accesible desde el correo)
     const blob = await put(blobFileName, curriculum, {
-      access: "public", // Acceso público con URL difícil de adivinar
-      addRandomSuffix: false,
+      access: "public",
+      addRandomSuffix: true,
       contentType: curriculum.type,
     });
 

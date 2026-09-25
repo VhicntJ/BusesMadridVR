@@ -39,10 +39,10 @@ export async function uploadCVToBlob(
     const safeFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
     const filename = `cv/${applicantId}_${timestamp}_${safeFilename}`;
 
-    // Subir a Vercel Blob
+    // Subir a Vercel Blob (público pero con sufijo aleatorio no adivinable)
     const blob = await put(filename, file, {
-      access: "public", // O "private" si solo admins deben verlo
-      addRandomSuffix: false,
+      access: "public",
+      addRandomSuffix: true,
     });
 
     return {
