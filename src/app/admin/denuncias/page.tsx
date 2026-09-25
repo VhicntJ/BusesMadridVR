@@ -25,6 +25,7 @@ type Denuncia = {
   id: string;
   codigo: string;
   tipo: string;
+  tipoLabel: string;
   submitter: "Anónimo" | "Identificado";
   date: string;
   status: Status;
@@ -37,6 +38,17 @@ type Denuncia = {
   areaInvolucrada?: string;
   estado: string;
   prioridad: string;
+};
+
+const TIPO_LABELS: Record<string, string> = {
+  infraccion_ley_20393: "Infracción a Ley 20.393",
+  acoso_laboral: "Acoso Laboral",
+  acoso_sexual: "Acoso Sexual",
+  discriminacion: "Discriminación",
+  robo_hurto_fraude: "Robo, Hurto o Fraude",
+  conflicto_interes: "Conflicto de Interés",
+  negligencia: "Negligencia",
+  otro: "Otro Incumplimiento",
 };
 
 type Seguimiento = {
@@ -170,6 +182,7 @@ export default function DenunciasPage() {
           id: String(item.id ?? ""),
           codigo: String(item.codigo ?? item.id ?? ""),
           tipo,
+          tipoLabel: TIPO_LABELS[tipo] ?? tipo,
           submitter: item.esAnonima ? "Anónimo" : "Identificado",
           date: formatDate(item.creadoEn),
           status: statusMap[estado] || "Nueva",
@@ -239,7 +252,9 @@ export default function DenunciasPage() {
     return denuncias.filter((d) => {
       const term = search.toLowerCase();
       const matchSearch =
-        d.codigo.toLowerCase().includes(term) || d.tipo.toLowerCase().includes(term);
+        d.codigo.toLowerCase().includes(term) ||
+        d.tipo.toLowerCase().includes(term) ||
+        d.tipoLabel.toLowerCase().includes(term);
       const matchStatus = statusFilter === "Todas" || d.status === statusFilter;
       const matchPriority = priorityFilter === "Todas" || d.priority === priorityFilter;
       return matchSearch && matchStatus && matchPriority;
@@ -495,7 +510,7 @@ export default function DenunciasPage() {
                       >
                         <td className="px-6 py-4 font-bold text-slate-700">{item.codigo}</td>
                         <td className="px-6 py-4 font-medium text-slate-600 max-w-[200px] truncate">
-                          {item.tipo}
+                          {item.tipoLabel}
                         </td>
                         <td className="px-6 py-4">
                           <span
@@ -620,7 +635,10 @@ export default function DenunciasPage() {
           <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <InfoField
               label="Tipo de infracción"
-              value={String(detailItem?.tipo ?? selectedItem.tipo ?? "No informado")}
+              value={
+                TIPO_LABELS[String(detailItem?.tipo ?? selectedItem.tipo)] ??
+                String(detailItem?.tipo ?? selectedItem.tipo ?? "No informado")
+              }
             />
             <InfoField
               label="Denunciante"
