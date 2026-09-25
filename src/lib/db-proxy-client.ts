@@ -139,6 +139,12 @@ export interface AdminUserInput {
   estado?: string;
 }
 
+export interface ConfigItem {
+  clave: string;
+  valor: string;
+  descripcion?: string | null;
+}
+
 class DbProxyClient {
   private apiUrl: string;
   private apiKey: string;
@@ -210,8 +216,17 @@ class DbProxyClient {
   /**
    * Login de administrador vía proxy PHP (el hash bcrypt se verifica en el servidor)
    */
-  async adminLogin(email: string, password: string): Promise<AdminLoginResult> {
-    const result = await this.requestResult<AdminUser>('admin_login', { email, password });
+  async adminLogin(
+    email: string,
+    password: string,
+    meta?: { ipOrigen?: string; userAgent?: string }
+  ): Promise<AdminLoginResult> {
+    const result = await this.requestResult<AdminUser>('admin_login', {
+      email,
+      password,
+      ip_origen: meta?.ipOrigen,
+      user_agent: meta?.userAgent,
+    });
 
     if (!result.ok) {
       return result;
@@ -294,6 +309,29 @@ class DbProxyClient {
 
   async adminUpdateUser(id: number, data: AdminUserInput): Promise<ProxyResult<{ updated: boolean }>> {
     return this.requestResult<{ updated: boolean }>('admin_update_user', { id, ...data });
+  }
+
+  async adminGetConfig(): Promise<ProxyResult<ConfigItem[]>> {
+    return this.requestResult<ConfigItem[]>('admin_get_config', {});
+  }
+
+  async adminUpdateConfig(items: ConfigItem[]): Promise<ProxyResult<{ updated: boolean }>> {
+    return this.requestResult<{ updated: boolean }>('admin_update_config', { items });
+  }
+
+  async adminChangePassword(
+    id: number,
+    currentPassword: string,
+    newPassword: string,
+    meta?: { ipOrigen?: string; userAgent?: string }
+  ): Promise<ProxyResult<{ updated: boolean }>> {
+    return this.requestResult<{ updated: boolean }>('admin_change_password', {
+      id,
+      current_password: currentPassword,
+      new_password: newPassword,
+      ip_origen: meta?.ipOrigen,
+      user_agent: meta?.userAgent,
+    });
   }
 
   /**

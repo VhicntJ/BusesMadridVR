@@ -35,7 +35,18 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    await jwtVerify(token, getSecret());
+    const { payload } = await jwtVerify(token, getSecret());
+
+    // Rutas solo para administradores
+    if (
+      pathname.startsWith("/admin/usuarios") ||
+      pathname.startsWith("/admin/configuracion")
+    ) {
+      if (payload.rol !== "administrador") {
+        return NextResponse.redirect(new URL("/admin", request.url));
+      }
+    }
+
     return NextResponse.next();
   } catch {
     const response = NextResponse.redirect(new URL("/admin/login", request.url));
