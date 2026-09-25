@@ -148,6 +148,7 @@ export async function POST(request: Request) {
       archivo_url: attachmentUrl ?? undefined,
       archivo_nombre: archivo instanceof File && archivo.size > 0 ? archivo.name : undefined,
       archivo_mime: archivo instanceof File && archivo.size > 0 ? archivo.type : undefined,
+      archivo_size: archivo instanceof File && archivo.size > 0 ? archivo.size : undefined,
     });
 
     if (validatedData.tipoEnvio === "con_datos" && validatedData.correo) {

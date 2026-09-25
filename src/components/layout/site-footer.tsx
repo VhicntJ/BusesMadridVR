@@ -83,12 +83,12 @@ export function SiteFooter({ navItems }: SiteFooterProps) {
               </h5>
               <ul className="brand-on-surface-muted mt-2 space-y-1.5 text-sm md:mt-3 md:space-y-2">
                 <li>
-                  <Link href="#" className="hover:text-primary transition-colors">
+                  <Link href="/politica-de-privacidad" className="hover:text-primary transition-colors">
                     Política de privacidad
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-primary transition-colors">
+                  <Link href="/terminos-y-condiciones" className="hover:text-primary transition-colors">
                     Términos y condiciones
                   </Link>
                 </li>

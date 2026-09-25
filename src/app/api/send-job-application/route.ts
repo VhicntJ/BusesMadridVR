@@ -11,6 +11,9 @@ import {
 } from "@/lib/email-service";
 import { jobApplicationSchema } from "@/lib/validation-schemas";
 import { getDbProxyClient } from "@/lib/db-proxy-client";
+import { getPrivateBlobUrl } from "@/lib/blob-download";
+
+const EMAIL_LINK_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 const allowedCvMimeTypes = new Set([
   "application/pdf",
@@ -128,14 +131,22 @@ export async function POST(request: Request) {
 
     const blobFileName = `cv/${validatedData.rut.replace(/\./g, '')}_${timestamp}${normalizedExtension}`;
 
-    // Subir a Vercel Blob con acceso público (URL no adivinable, accesible desde el correo)
+    // Subir a Vercel Blob (store privado: el acceso se hace con URL firmada temporal)
     const blob = await put(blobFileName, curriculum, {
-      access: "public",
+      access: "private",
       addRandomSuffix: true,
       contentType: curriculum.type,
     });
 
-    storedPath = blob.url; // URL pública permanente
+    storedPath = blob.url; // URL del blob privado
+
+    // Enlace firmado temporal para que el correo de RRHH pueda abrir el CV
+    let cvDownloadUrl = storedPath;
+    try {
+      cvDownloadUrl = await getPrivateBlobUrl(storedPath, EMAIL_LINK_TTL_MS);
+    } catch (signError) {
+      console.error("Failed to sign CV URL:", signError);
+    }
 
     // 7. Guardar datos en base de datos vía proxy
     const dbProxy = getDbProxyClient();
@@ -175,7 +186,7 @@ export async function POST(request: Request) {
     const adminEmailHtml = generateJobApplicationAdminEmailHTML({
       ...validatedData,
       cvFileName: safeOriginalName,
-      cvStoragePath: storedPath, // URL pública permanente
+      cvStoragePath: cvDownloadUrl,
     });
 
     // 9. Enviar correos directamente desde Vercel usando nodemailer

@@ -16,6 +16,7 @@ import {
   History,
   Paperclip,
 } from "lucide-react";
+import { parseDbDate } from "@/lib/date";
 
 type Status = "Nueva" | "En Revisión" | "Cerrada" | "Archivada";
 type Priority = "Alta" | "Media" | "Baja";
@@ -115,16 +116,14 @@ const ESTADO_LABELS: Record<string, string> = {
 };
 
 function formatDate(value: unknown): string {
-  if (!value) return "Sin fecha";
-  const date = new Date(String(value).replace(" ", "T"));
-  if (Number.isNaN(date.getTime())) return "Sin fecha";
+  const date = parseDbDate(value);
+  if (!date) return "Sin fecha";
   return date.toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
 }
 
 function formatDateTime(value: unknown): string {
-  if (!value) return "—";
-  const date = new Date(String(value).replace(" ", "T"));
-  if (Number.isNaN(date.getTime())) return "—";
+  const date = parseDbDate(value);
+  if (!date) return "—";
   return date.toLocaleString("es-ES", {
     day: "2-digit",
     month: "short",
@@ -338,7 +337,8 @@ export default function DenunciasPage() {
     ];
     const rows = filtered.map((d) => [
       d.codigo,
-      d.tipo,
+      d.tipoLabel,
+      d.submitter,
       d.submitter,
       d.date,
       d.analyst ?? "Sin asignar",
@@ -701,8 +701,15 @@ export default function DenunciasPage() {
                     className="flex items-center gap-2 text-sm text-slate-600 rounded-xl border border-slate-200 px-4 py-2.5"
                   >
                     <Paperclip size={14} className="text-slate-400" />
-                    {archivo.nombre_original}
-                    <span className="text-xs text-slate-400 ml-auto">
+                    <a
+                      href={`/api/admin/denuncias/${String(detailItem?.id ?? selectedItem.id)}/adjuntos/${archivo.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-red-600 hover:underline truncate"
+                    >
+                      {archivo.nombre_original}
+                    </a>
+                    <span className="text-xs text-slate-400 ml-auto shrink-0">
                       {Math.max(1, Math.round(archivo.tamanio_bytes / 1024))} KB
                     </span>
                   </li>

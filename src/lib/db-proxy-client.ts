@@ -57,6 +57,7 @@ interface ComplaintData {
   archivo_url?: string;
   archivo_nombre?: string;
   archivo_mime?: string;
+  archivo_size?: number;
 }
 
 interface EmailData {
@@ -294,6 +295,16 @@ class DbProxyClient {
     return this.requestResult<{ nombre_original: string; ruta: string; mime_type: string }>(
       'admin_get_cv',
       { id }
+    );
+  }
+
+  async adminGetComplaintFile(
+    denunciaId: number,
+    archivoId: number
+  ): Promise<ProxyResult<{ nombre_original: string; ruta: string; mime_type: string }>> {
+    return this.requestResult<{ nombre_original: string; ruta: string; mime_type: string }>(
+      'admin_get_complaint_file',
+      { denuncia_id: denunciaId, archivo_id: archivoId }
     );
   }
 

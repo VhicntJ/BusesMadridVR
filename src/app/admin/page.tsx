@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Clock, FileText, Users, ShieldCheck } from "lucide-react";
 import { getDbProxyClient } from "@/lib/db-proxy-client";
+import { timeAgo } from "@/lib/date";
 
 type DenunciaReciente = {
   codigo: string;
@@ -50,17 +51,6 @@ const accionLabels: Record<string, string> = {
   CERRAR_DENUNCIA: "Denuncia cerrada",
   NUEVA_DENUNCIA: "Nueva denuncia ingresada",
 };
-
-function timeAgo(date: Date | string): string {
-  const now = new Date();
-  const diffMs = now.getTime() - new Date(date).getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 60) return `Hace ${diffMin} min`;
-  const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `Hace ${diffH} h`;
-  const diffD = Math.floor(diffH / 24);
-  return `Hace ${diffD} día${diffD > 1 ? "s" : ""}`;
-}
 
 async function getDashboardData(): Promise<{
   stats: DashboardStats;

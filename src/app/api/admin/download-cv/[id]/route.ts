@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
 import { getDbProxyClient } from "@/lib/db-proxy-client";
+import { getPrivateBlobUrl } from "@/lib/blob-download";
 
 export const runtime = "nodejs";
 
@@ -38,8 +39,9 @@ export async function GET(
       return NextResponse.json({ error: "Error al descargar el currículum" }, { status: 500 });
     }
 
-    // 3. Redirigir a la URL del blob (Vercel Blob público)
-    return NextResponse.redirect(result.data.ruta);
+    // 3. Redirigir a una URL firmada temporal del blob privado
+    const signedUrl = await getPrivateBlobUrl(result.data.ruta);
+    return NextResponse.redirect(signedUrl);
   } catch (error) {
     console.error("Error downloading CV:", error);
     return NextResponse.json(
