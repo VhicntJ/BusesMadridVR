@@ -1,21 +1,20 @@
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Clock, FileText, Users, ShieldCheck } from "lucide-react";
-import type { RowDataPacket } from "mysql2";
-import { getDbPool } from "@/lib/db";
+import { getDbProxyClient } from "@/lib/db-proxy-client";
 
 type DenunciaReciente = {
   codigo: string;
   tipo: string;
   estado: string;
   prioridad: string;
-  creado_en: Date;
+  creado_en: string;
 };
 
 type ActividadLog = {
   accion: string;
   entidad: string | null;
   entidad_id: number | null;
-  creado_en: Date;
+  creado_en: string;
   usuario_nombre: string | null;
 };
 
@@ -52,7 +51,7 @@ const accionLabels: Record<string, string> = {
   NUEVA_DENUNCIA: "Nueva denuncia ingresada",
 };
 
-function timeAgo(date: Date): string {
+function timeAgo(date: Date | string): string {
   const now = new Date();
   const diffMs = now.getTime() - new Date(date).getTime();
   const diffMin = Math.floor(diffMs / 60000);
@@ -63,43 +62,26 @@ function timeAgo(date: Date): string {
   return `Hace ${diffD} día${diffD > 1 ? "s" : ""}`;
 }
 
-async function getDashboardData() {
-  const pool = getDbPool();
+async function getDashboardData(): Promise<{
+  stats: DashboardStats;
+  recientes: DenunciaReciente[];
+  actividad: ActividadLog[];
+}> {
+  const result = await getDbProxyClient().adminDashboard();
 
-  const [[statsRow], [recentRows], [activityRows]] = await Promise.all([
-    pool.execute<RowDataPacket[]>(`
-      SELECT
-        COUNT(*) AS total,
-        SUM(estado = 'en_revision') AS en_revision,
-        SUM(estado IN ('cerrada','archivada')) AS cerradas,
-        SUM(prioridad = 'alta' AND estado NOT IN ('cerrada','archivada')) AS criticas
-      FROM bm_denuncias
-    `),
-    pool.execute<RowDataPacket[]>(`
-      SELECT codigo, tipo, estado, prioridad, creado_en
-      FROM bm_denuncias
-      ORDER BY creado_en DESC
-      LIMIT 5
-    `),
-    pool.execute<RowDataPacket[]>(`
-      SELECT l.accion, l.entidad, l.entidad_id, l.creado_en, u.nombre AS usuario_nombre
-      FROM bm_logs_auditoria l
-      LEFT JOIN bm_usuarios u ON u.id = l.usuario_id
-      ORDER BY l.creado_en DESC
-      LIMIT 5
-    `),
-  ]);
+  if (!result.ok) {
+    console.error("Dashboard proxy error:", result.status, result.error);
+    return {
+      stats: { total: 0, en_revision: 0, cerradas: 0, criticas: 0 },
+      recientes: [] as DenunciaReciente[],
+      actividad: [] as ActividadLog[],
+    };
+  }
 
-  const s = statsRow[0] ?? {};
   return {
-    stats: {
-      total: Number(s.total ?? 0),
-      en_revision: Number(s.en_revision ?? 0),
-      cerradas: Number(s.cerradas ?? 0),
-      criticas: Number(s.criticas ?? 0),
-    } as DashboardStats,
-    recientes: recentRows as DenunciaReciente[],
-    actividad: activityRows as ActividadLog[],
+    stats: result.data.stats,
+    recientes: result.data.recientes as DenunciaReciente[],
+    actividad: result.data.actividad as ActividadLog[],
   };
 }
 

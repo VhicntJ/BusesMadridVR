@@ -23,6 +23,7 @@ export async function POST(request: Request) {
       if (result.error === "missing_credentials") {
         return NextResponse.json({ error: "Email y contraseña requeridos" }, { status: 400 });
       }
+      console.error("Login proxy error:", result.status, result.error);
       return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
     }
 

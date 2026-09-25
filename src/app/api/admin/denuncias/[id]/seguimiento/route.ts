@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { getDbPool } from "@/lib/db";
+import { getDbProxyClient } from "@/lib/db-proxy-client";
 import { verifyToken } from "@/lib/auth";
 
 export async function POST(
@@ -21,6 +21,12 @@ export async function POST(
     }
 
     const { id } = await params;
+    const complaintId = Number(id);
+
+    if (!Number.isInteger(complaintId) || complaintId <= 0) {
+      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+    }
+
     const body = await request.json();
     const { estado, nota, esVisibleDenunciante } = body;
 
@@ -28,19 +34,32 @@ export async function POST(
       return NextResponse.json({ error: "Faltan campos obligatorios" }, { status: 400 });
     }
 
-    const pool = getDbPool();
-    await pool.execute(
-      `
-        INSERT INTO bm_denuncias_seguimiento (denuncia_id, usuario_id, estado_anterior, estado_nuevo, nota, es_visible_denunciante)
-        VALUES (?, ?, (SELECT estado FROM bm_denuncias WHERE id = ?), ?, ?, ?)
-      `,
-      [id, session.userId, id, estado, nota, esVisibleDenunciante ? 1 : 0]
-    );
+    const ipAddress =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
+      undefined;
 
-    await pool.execute(
-      `UPDATE bm_denuncias SET estado = ?, prioridad = ?, actualizado_en = NOW() WHERE id = ?`,
-      [estado, body.prioridad || "media", id]
-    );
+    const result = await getDbProxyClient().adminAddFollowup({
+      denunciaId: complaintId,
+      usuarioId: session.userId,
+      estado,
+      nota,
+      prioridad: body.prioridad || "media",
+      esVisibleDenunciante: Boolean(esVisibleDenunciante),
+      ipOrigen: ipAddress,
+      userAgent: request.headers.get("user-agent") || undefined,
+    });
+
+    if (!result.ok) {
+      if (result.status === 404) {
+        return NextResponse.json({ error: "Denuncia no encontrada" }, { status: 404 });
+      }
+      if (result.status === 400) {
+        return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
+      }
+      console.error("Error adding complaint follow-up:", result.status, result.error);
+      return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

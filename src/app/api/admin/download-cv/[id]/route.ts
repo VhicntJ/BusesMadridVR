@@ -1,7 +1,7 @@
 // src/app/api/admin/download-cv/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
-import { getDbPool } from "@/lib/db";
+import { getDbProxyClient } from "@/lib/db-proxy-client";
 
 export const runtime = "nodejs";
 
@@ -22,38 +22,24 @@ export async function GET(
       return NextResponse.json({ error: "Invalid session" }, { status: 401 });
     }
 
-    // 2. Obtener información del archivo
-    const pool = getDbPool();
-    const [rows] = await pool.query(
-      `SELECT nombre_original, ruta, mime_type
-       FROM bm_postulaciones_archivos
-       WHERE id = ? AND tipo = 'curriculum'`,
-      [id]
-    );
-
-    if (!Array.isArray(rows) || rows.length === 0) {
-      return NextResponse.json({ error: "CV no encontrado" }, { status: 404 });
+    const fileId = Number(id);
+    if (!Number.isInteger(fileId) || fileId <= 0) {
+      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
     }
 
-    const file = rows[0] as { nombre_original: string; ruta: string; mime_type: string };
-    const blobUrl = file.ruta; // URL de Vercel Blob
+    // 2. Obtener información del archivo vía proxy
+    const result = await getDbProxyClient().adminGetCv(fileId);
 
-    // 3. Redirigir a la URL del blob
-    // Con access: "public", el archivo es accesible directamente
-    return NextResponse.redirect(blobUrl);
+    if (!result.ok) {
+      if (result.status === 404) {
+        return NextResponse.json({ error: "CV no encontrado" }, { status: 404 });
+      }
+      console.error("Error downloading CV:", result.status, result.error);
+      return NextResponse.json({ error: "Error al descargar el currículum" }, { status: 500 });
+    }
 
-    // Alternativa: Fetch y devolver el archivo (más control)
-    /*
-    const response = await fetch(blobUrl);
-    const arrayBuffer = await response.arrayBuffer();
-
-    return new NextResponse(arrayBuffer, {
-      headers: {
-        "Content-Type": file.mime_type,
-        "Content-Disposition": `attachment; filename="${file.nombre_original}"`,
-      },
-    });
-    */
+    // 3. Redirigir a la URL del blob (Vercel Blob público)
+    return NextResponse.redirect(result.data.ruta);
   } catch (error) {
     console.error("Error downloading CV:", error);
     return NextResponse.json(

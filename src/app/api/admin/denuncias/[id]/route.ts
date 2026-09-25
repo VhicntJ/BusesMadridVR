@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { getDbPool } from "@/lib/db";
+import { getDbProxyClient } from "@/lib/db-proxy-client";
 import { verifyToken } from "@/lib/auth";
 
 export async function GET(
@@ -21,44 +21,25 @@ export async function GET(
     }
 
     const { id } = await params;
-    const pool = getDbPool();
+    const complaintId = Number(id);
 
-    const [denunciaRows] = await pool.query(
-      `
-        SELECT d.*, u.nombre AS analista_nombre
-        FROM bm_denuncias d
-        LEFT JOIN bm_usuarios u ON u.id = d.analista_id
-        WHERE d.id = ?
-      `,
-      [id]
-    );
-
-    if (!Array.isArray(denunciaRows) || denunciaRows.length === 0) {
-      return NextResponse.json({ error: "Denuncia no encontrada" }, { status: 404 });
+    if (!Number.isInteger(complaintId) || complaintId <= 0) {
+      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
     }
 
-    const denuncia = denunciaRows[0] as Record<string, unknown>;
+    const result = await getDbProxyClient().adminGetComplaint(complaintId);
 
-    const [archivoRows] = await pool.query(
-      `
-        SELECT id, nombre_original, nombre_almacenado, ruta, mime_type, tamanio_bytes, creado_en
-        FROM bm_denuncias_archivos
-        WHERE denuncia_id = ?
-        ORDER BY creado_en DESC
-      `,
-      [id]
-    );
+    if (!result.ok) {
+      if (result.status === 404) {
+        return NextResponse.json({ error: "Denuncia no encontrada" }, { status: 404 });
+      }
+      console.error("Error fetching complaint detail:", result.status, result.error);
+      return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+    }
 
-    const [seguimientoRows] = await pool.query(
-      `
-        SELECT s.*, u.nombre AS usuario_nombre
-        FROM bm_denuncias_seguimiento s
-        LEFT JOIN bm_usuarios u ON u.id = s.usuario_id
-        WHERE s.denuncia_id = ?
-        ORDER BY s.creado_en DESC
-      `,
-      [id]
-    );
+    const denuncia = result.data.item;
+    const archivos = result.data.archivos;
+    const seguimiento = result.data.seguimiento;
 
     return NextResponse.json({
       item: {
@@ -79,8 +60,8 @@ export async function GET(
         actualizadoEn: denuncia.actualizado_en,
         analistaNombre: denuncia.analista_nombre,
       },
-      archivos: Array.isArray(archivoRows) ? archivoRows : [],
-      seguimiento: Array.isArray(seguimientoRows) ? seguimientoRows : [],
+      archivos,
+      seguimiento,
     });
   } catch (error) {
     console.error("Error fetching complaint detail:", error);

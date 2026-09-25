@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { getDbPool } from "@/lib/db";
+import { getDbProxyClient } from "@/lib/db-proxy-client";
 import { verifyToken } from "@/lib/auth";
 
 export async function GET() {
@@ -17,34 +17,14 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const pool = getDbPool();
-    const [rows] = await pool.query(
-      `
-        SELECT
-          d.id,
-          d.codigo,
-          d.tipo,
-          d.descripcion,
-          d.es_anonima,
-          d.denunciante_nombre,
-          d.denunciante_email,
-          d.denunciante_telefono,
-          d.area_involucrada,
-          d.estado,
-          d.prioridad,
-          d.resolucion,
-          d.fecha_cierre,
-          d.creado_en,
-          d.actualizado_en,
-          u.nombre AS analista_nombre
-        FROM bm_denuncias d
-        LEFT JOIN bm_usuarios u ON u.id = d.analista_id
-        ORDER BY d.creado_en DESC
-      `
-    );
+    const result = await getDbProxyClient().adminListComplaints();
 
-    const items = Array.isArray(rows)
-      ? (rows as Array<Record<string, unknown>>).map((row) => ({
+    if (!result.ok) {
+      console.error("Error fetching complaints:", result.status, result.error);
+      return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+    }
+
+    const items = result.data.map((row) => ({
           id: Number(row.id ?? 0),
           codigo: typeof row.codigo === "string" ? row.codigo : "",
           tipo: typeof row.tipo === "string" ? row.tipo : "",
@@ -61,8 +41,7 @@ export async function GET() {
           creadoEn: row.creado_en ?? null,
           actualizadoEn: row.actualizado_en ?? null,
           analistaNombre: typeof row.analista_nombre === "string" ? row.analista_nombre : null,
-        }))
-      : [];
+        }));
 
     return NextResponse.json({ items });
   } catch (error) {

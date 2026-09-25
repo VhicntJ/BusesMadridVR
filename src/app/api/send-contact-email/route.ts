@@ -3,7 +3,7 @@ import { validateRequest, errorResponse, successResponse, getClientIp } from "@/
 import { verifyRecaptcha } from "@/lib/recaptcha-service";
 import { sendEmail, generateContactEmailHTML, escapeHtml } from "@/lib/email-service";
 import { contactFormSchema } from "@/lib/validation-schemas";
-import { getDbPool, type ResultSetHeader } from "@/lib/db";
+import { getDbProxyClient } from "@/lib/db-proxy-client";
 
 export async function POST(request: Request) {
   try {
@@ -45,22 +45,14 @@ export async function POST(request: Request) {
 
     const safeSubject = data.asunto.replace(/[\r\n]+/g, " ").trim();
 
-    const pool = getDbPool();
-    await pool.execute<ResultSetHeader>(
-      `INSERT INTO bm_contacto_mensajes
-        (nombre, email, telefono, empresa, asunto, mensaje, leido, respondido, ip_origen)
-       VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?)`
-      ,
-      [
-        data.nombre,
-        data.correo,
-        data.telefono || null,
-        null,
-        data.asunto,
-        data.mensaje,
-        ipAddress,
-      ]
-    );
+    await getDbProxyClient().insertContact({
+      nombre: data.nombre,
+      correo: data.correo,
+      telefono: data.telefono || undefined,
+      asunto: data.asunto,
+      mensaje: data.mensaje,
+      ip_origen: ipAddress,
+    });
 
     await sendEmail({
       to: emailTo,

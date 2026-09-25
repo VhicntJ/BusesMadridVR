@@ -77,6 +77,50 @@ export type AdminLoginResult =
   | { ok: true; user: AdminUser }
   | { ok: false; status: number; error: string };
 
+export type ProxyResult<T> =
+  | { ok: true; data: T }
+  | { ok: false; status: number; error: string };
+
+export interface AdminDashboardData {
+  stats: {
+    total: number;
+    en_revision: number;
+    cerradas: number;
+    criticas: number;
+  };
+  recientes: Array<{
+    codigo: string;
+    tipo: string;
+    estado: string;
+    prioridad: string;
+    creado_en: string;
+  }>;
+  actividad: Array<{
+    accion: string;
+    entidad: string | null;
+    entidad_id: number | null;
+    creado_en: string;
+    usuario_nombre: string | null;
+  }>;
+}
+
+export interface AdminComplaintDetail {
+  item: Record<string, unknown>;
+  archivos: Array<Record<string, unknown>>;
+  seguimiento: Array<Record<string, unknown>>;
+}
+
+export interface AdminFollowupData {
+  denunciaId: number;
+  usuarioId: number;
+  estado: string;
+  nota: string;
+  prioridad?: string;
+  esVisibleDenunciante?: boolean;
+  ipOrigen?: string;
+  userAgent?: string;
+}
+
 class DbProxyClient {
   private apiUrl: string;
   private apiKey: string;
@@ -90,7 +134,7 @@ class DbProxyClient {
     }
   }
 
-  private async request<T>(action: string, data: JobApplicationData | ContactData | ComplaintData | EmailData): Promise<T> {
+  private async request<T>(action: string, data: object): Promise<T> {
     try {
       const response = await fetch(this.apiUrl, {
         method: 'POST',
@@ -149,6 +193,16 @@ class DbProxyClient {
    * Login de administrador vía proxy PHP (el hash bcrypt se verifica en el servidor)
    */
   async adminLogin(email: string, password: string): Promise<AdminLoginResult> {
+    const result = await this.requestResult<AdminUser>('admin_login', { email, password });
+
+    if (!result.ok) {
+      return result;
+    }
+
+    return { ok: true, user: result.data };
+  }
+
+  private async requestResult<T>(action: string, data: object): Promise<ProxyResult<T>> {
     try {
       const response = await fetch(this.apiUrl, {
         method: 'POST',
@@ -156,12 +210,12 @@ class DbProxyClient {
           'Content-Type': 'application/json',
           'X-API-Key': this.apiKey,
         },
-        body: JSON.stringify({ action: 'admin_login', email, password }),
+        body: JSON.stringify({ action, ...data }),
       });
 
-      const result = (await response.json().catch(() => ({}))) as ProxyResponse<AdminUser>;
+      const result = (await response.json().catch(() => ({}))) as ProxyResponse<T>;
 
-      if (!response.ok || !result.success || !result.data) {
+      if (!response.ok || !result.success || result.data === undefined) {
         return {
           ok: false,
           status: response.status,
@@ -169,11 +223,45 @@ class DbProxyClient {
         };
       }
 
-      return { ok: true, user: result.data };
+      return { ok: true, data: result.data };
     } catch (error) {
-      console.error('DB Proxy error (admin_login):', error);
+      console.error(`DB Proxy error (${action}):`, error);
       return { ok: false, status: 500, error: 'proxy_unreachable' };
     }
+  }
+
+  async adminDashboard(): Promise<ProxyResult<AdminDashboardData>> {
+    return this.requestResult<AdminDashboardData>('admin_dashboard', {});
+  }
+
+  async adminListComplaints(): Promise<ProxyResult<Array<Record<string, unknown>>>> {
+    return this.requestResult<Array<Record<string, unknown>>>('admin_list_complaints', {});
+  }
+
+  async adminGetComplaint(id: number): Promise<ProxyResult<AdminComplaintDetail>> {
+    return this.requestResult<AdminComplaintDetail>('admin_get_complaint', { id });
+  }
+
+  async adminAddFollowup(data: AdminFollowupData): Promise<ProxyResult<{ success: boolean }>> {
+    return this.requestResult<{ success: boolean }>('admin_add_followup', {
+      denuncia_id: data.denunciaId,
+      usuario_id: data.usuarioId,
+      estado: data.estado,
+      nota: data.nota,
+      prioridad: data.prioridad ?? 'media',
+      es_visible_denunciante: data.esVisibleDenunciante ? 1 : 0,
+      ip_origen: data.ipOrigen,
+      user_agent: data.userAgent,
+    });
+  }
+
+  async adminGetCv(
+    id: number
+  ): Promise<ProxyResult<{ nombre_original: string; ruta: string; mime_type: string }>> {
+    return this.requestResult<{ nombre_original: string; ruta: string; mime_type: string }>(
+      'admin_get_cv',
+      { id }
+    );
   }
 
   /**
