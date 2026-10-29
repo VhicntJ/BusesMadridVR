@@ -46,18 +46,37 @@ export type JobApplicationData = z.infer<typeof jobApplicationSchema>;
 /**
  * Schema para validación de denuncia
  */
+export const leyKarinTypes = [
+  "Ley 21.643 (Ley Karin) - Acoso Sexual",
+  "Ley 21.643 (Ley Karin) - Acoso Laboral",
+  "Ley 21.643 (Ley Karin) - Violencia en el trabajo",
+] as const;
+
+export const companyRelationships = ["Trabajador", "Colaborador", "Proveedor", "Otro"] as const;
+
+export const isLeyKarin = (tipo: string) =>
+  leyKarinTypes.some((option) => option === tipo);
+
 export const complaintFormSchema = z.object({
   tipoDenuncia: z.string().min(1, "Seleccione un tipo de denuncia"),
   tipoEnvio: z.enum(["anonimo", "con_datos"]),
-  nombre: z.string().optional(),
-  rut: z.string().optional(),
-  celular: z.string().optional(),
+  tipoRelacion: z.enum(companyRelationships).optional().or(z.literal("")),
+  nombre: z.string().trim().optional(),
+  rut: z.string().trim().optional(),
+  celular: z.string().trim().optional(),
   correo: z.string().email("Ingrese un correo válido").optional().or(z.literal("")),
   lugar: z.string().min(5, "El lugar de la infracción es requerido"),
   detalle: z.string().min(20, "Ingrese más detalles de la denuncia").max(6000),
   archivo: z.any().optional(),
 }).superRefine((data, ctx) => {
-  if (data.tipoEnvio === "con_datos") {
+  const karin = isLeyKarin(data.tipoDenuncia);
+  if (karin && data.tipoEnvio !== "con_datos") {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["tipoEnvio"], message: "Las denuncias Ley Karin requieren sus datos personales" });
+  }
+  if (!data.tipoRelacion) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["tipoRelacion"], message: "Seleccione su relación con la empresa" });
+  }
+  if (karin || data.tipoEnvio === "con_datos") {
     if (!data.nombre || data.nombre.length < 2) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

@@ -6,56 +6,10 @@ import { X, Send, AlertTriangle, Paperclip, Search, Clock } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { complaintFormSchema, leyKarinTypes, companyRelationships, isLeyKarin } from "@/lib/validation-schemas";
 import { cn } from "@/lib/utils";
 
-const schema = z
-  .object({
-    tipoDenuncia: z.string().min(1, "Seleccione un tipo de denuncia"),
-    tipoEnvio: z.enum(["anonimo", "con_datos"]),
-    nombre: z.string().optional(),
-    rut: z.string().optional(),
-    celular: z.string().optional(),
-    correo: z.string().optional(),
-    lugar: z.string().min(5, "El lugar de la infracción es requerido"),
-    detalle: z
-      .string()
-      .min(20, "Por favor, ingrese la mayor cantidad posible de detalles"),
-    archivo: z.any().optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.tipoEnvio === "con_datos") {
-      if (!data.nombre || data.nombre.length < 2) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "El nombre es requerido",
-          path: ["nombre"],
-        });
-      }
-      if (!data.rut || data.rut.length < 8) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "El RUT es requerido",
-          path: ["rut"],
-        });
-      }
-      if (!data.celular || data.celular.length < 8) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "El celular es requerido",
-          path: ["celular"],
-        });
-      }
-      if (!data.correo || !/^\S+@\S+\.\S+$/.test(data.correo)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Ingrese un correo electrónico válido",
-          path: ["correo"],
-        });
-      }
-    }
-  });
-
-type FormData = z.infer<typeof schema>;
+type FormData = z.infer<typeof complaintFormSchema>;
 
 type DenunciaModalProps = {
   isOpen: boolean;
@@ -83,7 +37,7 @@ export function DenunciaModal({ isOpen, onClose }: DenunciaModalProps) {
     formState: { errors, isSubmitting },
     reset,
   } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(complaintFormSchema),
     defaultValues: {
       tipoEnvio: "anonimo",
       tipoDenuncia: "",
@@ -91,12 +45,14 @@ export function DenunciaModal({ isOpen, onClose }: DenunciaModalProps) {
   });
 
   const tipoEnvio = watch("tipoEnvio");
+  const karin = isLeyKarin(watch("tipoDenuncia"));
 
   const onSubmit = async (data: FormData) => {
     try {
       const payload = new FormData();
       payload.append("tipoDenuncia", data.tipoDenuncia);
       payload.append("tipoEnvio", data.tipoEnvio);
+      payload.append("tipoRelacion", data.tipoRelacion ?? "");
       payload.append("nombre", data.nombre ?? "");
       payload.append("rut", data.rut ?? "");
       payload.append("celular", data.celular ?? "");
@@ -344,7 +300,7 @@ export function DenunciaModal({ isOpen, onClose }: DenunciaModalProps) {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                       <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
                         <p className="text-[13px] leading-relaxed text-slate-600 text-justify">
-                          Con el objetivo de mantener y proteger los más altos estándares de ética en las relaciones humanas y en los negocios, así como fomentar la integridad en todo tipo de transacciones e interacciones, <strong>Buses Madrid</strong> ha desarrollado un canal de denuncias, simple y seguro, que garantiza el anonimato y la confidencialidad a todas aquellas personas, ya sean internas, externas y/o proveedores de la compañía, que conozcan o sospechen de alguna actividad desarrollada por algún trabajador de la empresa, que pudiese implicar una violación a la LEY N° 20.393 dejando expresamente de manifiesto que la compañía prohíbe cualquier tipo de represalia ante las denuncias realizadas de buena fe.
+                          Con el objetivo de mantener y proteger los más altos estándares de ética en las relaciones humanas y en los negocios, así como fomentar la integridad en todo tipo de transacciones e interacciones, <strong>Buses Madrid</strong> ha desarrollado un canal de denuncias, simple y seguro, que garantiza la confidencialidad y permite el anonimato salvo en denuncias Ley Karin a todas aquellas personas, ya sean internas, externas y/o proveedores de la compañía, que conozcan o sospechen de alguna actividad desarrollada por algún trabajador de la empresa, que pudiese implicar una violación a la LEY N° 20.393 dejando expresamente de manifiesto que la compañía prohíbe cualquier tipo de represalia ante las denuncias realizadas de buena fe.
                         </p>
                       </div>
 
@@ -353,13 +309,21 @@ export function DenunciaModal({ isOpen, onClose }: DenunciaModalProps) {
                           (*) SELECCIONE TIPO DENUNCIA
                         </label>
                         <select
-                          {...register("tipoDenuncia")}
+                          {...register("tipoDenuncia", {
+                            onChange: (event) => {
+                              if (isLeyKarin(event.target.value)) {
+                                setValue("tipoEnvio", "con_datos", { shouldValidate: true });
+
+                              }
+                            },
+                          })}
                           className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm outline-none transition-all focus:border-red-500 focus:ring-1 focus:ring-red-500 bg-white"
                         >
                           <option value="">Seleccione Tipo de Denuncia...</option>
                           <option value="Infraccion a Ley 20.393">Infracción a Ley 20.393 (Cohecho, lavado de activos, etc.)</option>
                           <option value="Acoso Laboral">Acoso Laboral</option>
                           <option value="Acoso Sexual">Acoso Sexual</option>
+                          {leyKarinTypes.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}
                           <option value="Robo o Hurto">Robo, Hurto o Fraude</option>
                           <option value="Conflicto de Interes">Conflicto de Interés</option>
                           <option value="Otro">Otro Incumplimiento Ético</option>
@@ -367,6 +331,23 @@ export function DenunciaModal({ isOpen, onClose }: DenunciaModalProps) {
                         {errors.tipoDenuncia && (
                           <p className="text-xs text-red-500">{errors.tipoDenuncia.message}</p>
                         )}
+                      </div>
+
+                      <div className="space-y-2">
+                        {karin && (
+                          <p role="status" className="text-sm text-slate-600">
+                            Las denuncias Ley Karin requieren sus datos personales y no permiten el envío anónimo.
+                          </p>
+                        )}
+                          <label htmlFor="tipo-relacion" className="text-sm font-semibold text-slate-900">
+                            (*) Tipo de relación con la empresa
+                          </label>
+                          <select id="tipo-relacion" {...register("tipoRelacion")} required
+                            className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm bg-white focus:border-red-500">
+                            <option value="">Seleccione su relación...</option>
+                            {companyRelationships.map((relacion) => <option key={relacion} value={relacion}>{relacion}</option>)}
+                          </select>
+                          {errors.tipoRelacion && <p className="text-xs text-red-500">{errors.tipoRelacion.message}</p>}
                       </div>
 
                       <div className="space-y-3">
@@ -380,9 +361,10 @@ export function DenunciaModal({ isOpen, onClose }: DenunciaModalProps) {
                             <div className="grid grid-cols-2 gap-3">
                               <button
                                 type="button"
+                                disabled={karin}
                                 onClick={() => field.onChange("anonimo")}
                                 className={cn(
-                                  "flex items-center justify-center rounded-xl border-2 px-4 py-3 text-sm font-semibold transition-all",
+                                  "flex items-center justify-center rounded-xl border-2 px-4 py-3 text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed",
                                   field.value === "anonimo"
                                     ? "border-red-600 bg-red-50 text-red-700"
                                     : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
@@ -394,7 +376,7 @@ export function DenunciaModal({ isOpen, onClose }: DenunciaModalProps) {
                                 type="button"
                                 onClick={() => field.onChange("con_datos")}
                                 className={cn(
-                                  "flex items-center justify-center rounded-xl border-2 px-4 py-3 text-sm font-semibold transition-all",
+                                  "flex items-center justify-center rounded-xl border-2 px-4 py-3 text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed",
                                   field.value === "con_datos"
                                     ? "border-red-600 bg-red-50 text-red-700"
                                     : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"

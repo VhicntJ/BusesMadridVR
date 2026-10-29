@@ -21,6 +21,9 @@ function normalizeComplaintType(value: string): string {
   const map: Record<string, string> = {
     "infraccion a ley 20.393": "infraccion_ley_20393",
     "infracción a ley 20.393": "infraccion_ley_20393",
+    "ley 21.643 (ley karin) - acoso sexual": "acoso_sexual",
+    "ley 21.643 (ley karin) - acoso laboral": "acoso_laboral",
+    "ley 21.643 (ley karin) - violencia en el trabajo": "otro",
     "acoso laboral": "acoso_laboral",
     "acoso sexual": "acoso_sexual",
     "robo o hurto": "robo_hurto_fraude",
@@ -72,6 +75,7 @@ export async function POST(request: Request) {
     const data = {
       tipoDenuncia: getField("tipoDenuncia"),
       tipoEnvio: getField("tipoEnvio") === "con_datos" ? "con_datos" : "anonimo",
+      tipoRelacion: getField("tipoRelacion"),
       nombre: getField("nombre"),
       rut: getField("rut"),
       celular: getField("celular"),
@@ -136,7 +140,8 @@ export async function POST(request: Request) {
     const dbProxy = getDbProxyClient();
     const dbResult = await dbProxy.insertComplaint({
       tipo: normalizeComplaintType(validatedData.tipoDenuncia),
-      descripcion: validatedData.detalle,
+      // Preserve the exact category and relationship through the existing PHP proxy.
+      descripcion: `Tipo de denuncia: ${validatedData.tipoDenuncia}\nTipo de relación con la empresa: ${validatedData.tipoRelacion}\n\n${validatedData.detalle}`,
       lugar: validatedData.lugar,
       es_anonima: validatedData.tipoEnvio === "anonimo" ? 1 : 0,
       nombre: validatedData.tipoEnvio === "con_datos" ? validatedData.nombre : undefined,
